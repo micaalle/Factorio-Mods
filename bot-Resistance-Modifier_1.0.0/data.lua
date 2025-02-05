@@ -1,8 +1,5 @@
--- data.lua
-
--- Function to apply resistances to a robot
 local function apply_resistances_to_robot(bot)
-    -- Ensure the robot has a resistances table
+
     bot.resistances = bot.resistances or {}
 
     -- Retrieve the custom resistance values from settings
