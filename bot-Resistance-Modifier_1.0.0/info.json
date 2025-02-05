@@ -1,0 +1,9 @@
+{
+    "name": "bot-Resistance-Modifier",
+    "version": "1.0.0",
+    "title": "Robot Resistance Settings",
+    "author": "micaalle",
+    "factorio_version": "2.0",
+    "dependencies": ["base >= 2.0"],
+    "description": "Allows customization of robot resistances through mod settings. The values will start at 100% ressitance but you can individually change them based on damage type"
+  }
