@@ -1,7 +1,5 @@
--- settings.lua
-
 data:extend({
-  -- Settings for robot resistances
+
   {
     type = "bool-setting",
     name = "robot-construction-resistance", 
@@ -18,7 +16,7 @@ data:extend({
     order = "b"
   },
 
-  -- Settings for each resistance type (allowing players to choose a value)
+  -- Settings for each resistance type 
   {
     type = "double-setting",
     name = "electric-resistance-value", 
@@ -43,7 +41,7 @@ data:extend({
     type = "double-setting",
     name = "acid-resistance-value", 
     setting_type = "startup",
-    default_value = 100,  
+    default_value = 100, 
     minimum_value = 0,
     maximum_value = 100,  
     order = "e"
@@ -53,9 +51,9 @@ data:extend({
     type = "double-setting",
     name = "explosion-resistance-value", 
     setting_type = "startup",
-    default_value = 100, 
+    default_value = 100,  
     minimum_value = 0,
-    maximum_value = 100, 
+    maximum_value = 100,  
     order = "f"
   },
 
@@ -63,7 +61,7 @@ data:extend({
     type = "double-setting",
     name = "fire-resistance-value", 
     setting_type = "startup",
-    default_value = 100, 
+    default_value = 100,  
     minimum_value = 0,
     maximum_value = 100, 
     order = "g"
@@ -73,9 +71,10 @@ data:extend({
     type = "double-setting",
     name = "impact-resistance-value", 
     setting_type = "startup",
-    default_value = 100,  
+    default_value = 100, 
     minimum_value = 0,
-    maximum_value = 100, 
+    maximum_value = 100,  
     order = "h"
   }
 })
+
