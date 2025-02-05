@@ -23,9 +23,9 @@ data:extend({
     type = "double-setting",
     name = "electric-resistance-value", 
     setting_type = "startup",
-    default_value = 100,  -- Start at 100
+    default_value = 100,  
     minimum_value = 0,
-    maximum_value = 100,  -- Max value is 100
+    maximum_value = 100,  
     order = "c"
   },
 
@@ -33,9 +33,9 @@ data:extend({
     type = "double-setting",
     name = "physical-resistance-value", 
     setting_type = "startup",
-    default_value = 100,  -- Start at 100
+    default_value = 100, 
     minimum_value = 0,
-    maximum_value = 100,  -- Max value is 100
+    maximum_value = 100,  
     order = "d"
   },
 
@@ -43,9 +43,9 @@ data:extend({
     type = "double-setting",
     name = "acid-resistance-value", 
     setting_type = "startup",
-    default_value = 100,  -- Start at 100
+    default_value = 100,  
     minimum_value = 0,
-    maximum_value = 100,  -- Max value is 100
+    maximum_value = 100,  
     order = "e"
   },
 
@@ -53,9 +53,9 @@ data:extend({
     type = "double-setting",
     name = "explosion-resistance-value", 
     setting_type = "startup",
-    default_value = 100,  -- Start at 100
+    default_value = 100, 
     minimum_value = 0,
-    maximum_value = 100,  -- Max value is 100
+    maximum_value = 100, 
     order = "f"
   },
 
@@ -63,9 +63,9 @@ data:extend({
     type = "double-setting",
     name = "fire-resistance-value", 
     setting_type = "startup",
-    default_value = 100,  -- Start at 100
+    default_value = 100, 
     minimum_value = 0,
-    maximum_value = 100,  -- Max value is 100
+    maximum_value = 100, 
     order = "g"
   },
 
@@ -73,9 +73,9 @@ data:extend({
     type = "double-setting",
     name = "impact-resistance-value", 
     setting_type = "startup",
-    default_value = 100,  -- Start at 100
+    default_value = 100,  
     minimum_value = 0,
-    maximum_value = 100,  -- Max value is 100
+    maximum_value = 100, 
     order = "h"
   }
 })
