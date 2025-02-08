@@ -1,0 +1,1 @@
+This is still a work in progress and is currently quite broken. However, the goal is to give the player access to a respawn beacon once military has been researched. The beacon will be placeable anywhere and will maintain the player's spawn unless it is mined or destroyed.
