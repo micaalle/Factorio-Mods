@@ -1,4 +1,4 @@
--- Ensure the player’s spawn point is set when the beacon is placed
+-- Ensure the player’s spawn point 
 script.on_event(defines.events.on_built_entity, function(event)
   local entity = event.created_entity
   if not entity then
@@ -6,7 +6,7 @@ script.on_event(defines.events.on_built_entity, function(event)
       return
   end
 
-  -- Debugging: Log the entity details
+
   game.print("Respawn beacon placed at position: " .. serpent.line(entity.position))
 
   if entity.name == "respawn-beacon" then
@@ -16,7 +16,7 @@ script.on_event(defines.events.on_built_entity, function(event)
   end
 end)
 
--- Handle player respawn to make sure the spawn point is set to the beacon if it exists
+
 script.on_event(defines.events.on_player_respawned, function(event)
   local player = game.players[event.player_index]
   if not global.respawn_point then
@@ -29,7 +29,7 @@ script.on_event(defines.events.on_player_respawned, function(event)
   game.print("Player respawned at the respawn beacon position.")
 end)
 
--- Ensure global table exists
+
 if not global.respawn_point then
   global.respawn_point = nil
 end
