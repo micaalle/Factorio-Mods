@@ -4,8 +4,8 @@ data:extend({
   -- Recipe for Respawn Beacon
   {
     type = "recipe",
-    name = config.item_name,  -- use the name from the settings file
-    enabled = false,  -- Disabled by default, will be unlocked via technology
+    name = config.item_name,  
+    enabled = false,  
     ingredients = {
       {type = "item", name = "stone-brick", amount = 50},
       {type = "item", name = "electronic-circuit", amount = 5}
@@ -15,33 +15,33 @@ data:extend({
     },
   },
 
-  -- Item definition for Respawn Beacon
+
   {
     type = "item",
-    name = config.item_name,  -- use the name from the settings file
+    name = config.item_name,  
     icon = "__base__/graphics/icons/accumulator.png",  -- Placeholder icon
     icon_size = 64,
     icon_mipmaps = 4,
     subgroup = "transport",
     stack_size = 50,
-    place_result = config.entity_name,  -- use the name from the settings file
+    place_result = config.entity_name,  
   },
 
-  -- Respawn Beacon entity definition using container
+
   {
     type = "container",
-    name = config.entity_name,  -- use the name from the settings file
+    name = config.entity_name,  
     icon = "__base__/graphics/icons/accumulator.png",  -- Placeholder icon
     icon_size = 64,
     icon_mipmaps = 4,
     collision_box = {{-1, -1}, {1, 1}},  -- Entity collision box
-    selection_box = {{-1, -1}, {1, 1}},  -- Entity selection box
+    selection_box = {{-1, -1}, {1, 1}},  
     flags = {"placeable-neutral", "player-creation", "placeable-off-grid"},
     minable = {mining_time = 0.5, result = config.item_name},  -- Can be mined to get the beacon item back
     max_health = 100,
-    corpse = "small-remnants",  -- Corpse when destroyed
+    corpse = "small-remnants",  
     resistances = {
-      {type = "fire", percent = 90}  -- Fire resistance
+      {type = "fire", percent = 90}  
     },
     picture = {
       filename = "__base__/graphics/entity/accumulator/accumulator.png",  -- Placeholder sprite
@@ -50,14 +50,14 @@ data:extend({
       shift = {0, 0},
     },
     order = "a[items]-a[respawn-beacon]",
-    inventory_size = 0,  -- Container with no inventory (not used for item storage)
+    inventory_size = 0,  
   },
 
-  -- Technology definition for Respawn Beacon
+
   {
     type = "technology",
-    name = config.tech_name,  -- use the name from the settings file
-    icon = "__base__/graphics/icons/accumulator.png",  -- Placeholder icon
+    name = config.tech_name,  
+    icon = "__base__/graphics/icons/accumulator.png",  
     icon_size = 64,
     effects = {
       {
