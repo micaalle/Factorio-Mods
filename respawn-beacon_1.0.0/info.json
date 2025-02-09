@@ -1,0 +1,9 @@
+{
+    "name": "respawn-beacon",
+    "version": "1.0.0",
+    "title": "Respawn anchor",
+    "author": "micaalle",
+    "factorio_version": "2.0",
+    "dependencies": ["base >= 2.0"],
+    "description": "The Respawn Anchor is a placeable item that allows players to set their spawn point at a specific location, ensuring they respawn there after death."
+  }
