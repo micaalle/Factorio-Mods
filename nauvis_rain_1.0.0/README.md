@@ -1,0 +1,1 @@
+This was meant to be a bigger project which would give the world of factorio changing weather effects. However the actually API of factorio does not support world changes in a way that would facilitate this without reseting the instance each time so for now you can enjoy the constant rain
