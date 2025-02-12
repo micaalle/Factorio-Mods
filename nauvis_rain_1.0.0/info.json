@@ -1,0 +1,9 @@
+{
+  "name": "nauvis_rain",
+  "version": "1.0.0",
+  "factorio_version": "2.0",
+  "title": "Nauvis rain",
+  "author": "micaalle",
+  "description": "Gives a constant downpour to the nauvis planet",
+  "dependencies": ["base >= 2.0.0", "space-age >= 2.0.0"]
+}
