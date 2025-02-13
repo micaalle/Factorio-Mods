@@ -1,64 +1,24 @@
+script.on_event(defines.events.on_entity_died, function(event)
+  local entity = event.entity
 
-script.on_event(defines.events.on_player_selected_area, function(event)
-    local player = game.players[event.player_index]
-    
+  if entity.name == "explosive-rc-car" then
+      local surface = entity.surface
+      local position = entity.position
+      local radius = 15  
+      local damage = 2000
 
-    if not player.force.rc_cars then
-      player.force.rc_cars = {}
-    end
-  
-
-    if event.item == "explosive-rc-car" then
-      local car = player.selected
-      if car and car.name == "explosive-rc-car" then
-
-        table.insert(player.force.rc_cars, car)
-      end
-    end
-  end)
-  
-
-  local function explode_rc_car(player, car)
-    if car and car.valid then
-
-      local explosion = car.surface.create_entity{
-        name = "rc-car-explosion",
-        position = car.position,
-        force = "neutral"
-      }
-  
-    
-      car.destroy()
-  
-
-      player.play_sound{path = "__base__/sound/fight/explosion-1.ogg", volume = 0.8}
-    end
-  end
-  
-
-  script.on_event(defines.events.on_player_used_capsule, function(event)
-    local player = game.players[event.player_index]
-
-    if event.item.name == "explosive-rc-car" then
- 
-      local closest_car = nil
-      local closest_distance = math.huge
-      
-      if player.force.rc_cars then
-        for _, car in pairs(player.force.rc_cars) do
-          if car and car.valid then
-            local distance = player.position.distance(car.position)
-            if distance < closest_distance then
-              closest_car = car
-              closest_distance = distance
-            end
+      for _, nearby_entity in pairs(surface.find_entities_filtered{
+          area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}},
+      }) do
+          if nearby_entity and nearby_entity.valid and nearby_entity.health then
+              nearby_entity.damage(damage, entity.force, "explosion")
           end
-        end
-
-        if closest_car then
-          explode_rc_car(player, closest_car)
-        end
       end
-    end
-  end)
-  
+
+      surface.create_entity{
+          name = "rc-car-explosion",  
+          position = position,
+          force = entity.force
+      }
+  end
+end)
