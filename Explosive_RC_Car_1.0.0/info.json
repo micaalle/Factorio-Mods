@@ -1,0 +1,10 @@
+{
+    "name": "Explosive_RC_Car",
+    "version": "1.0.0",
+    "title": "Explosive RC Car",
+    "author": "micaalle",
+    "description": "A remote-controlled car that can be driven into biter nests and exploded!",
+    "factorio_version": "2.0",
+    "dependencies": ["base >= 2.0.0"]
+  }
+  
