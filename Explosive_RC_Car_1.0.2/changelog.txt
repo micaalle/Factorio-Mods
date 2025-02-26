@@ -1,4 +1,0 @@
-1.0.1: Implemented damage scaling based on "Stronger Explosive" level with a 0.4 modifier each time it is upgraded. Also got rid of the ghost after explosion. Still need to add icons onto the research for stronger explosives to represent the new change however everything else should work as intended
-
-
-1.0.0 Base mod published
