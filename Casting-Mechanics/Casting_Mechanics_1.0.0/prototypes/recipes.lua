@@ -10,12 +10,13 @@ data:extend({
       enabled = false,
       ingredients =
       {
-        {type = "item", name = "iron-ore", amount = 75},
+        {type = "fluid", name = "lava", amount = 500},
       },
       energy_required = 32,
       results =
       {
-        {type = "fluid", name = "molten-iron", amount = 500},
+        {type = "fluid", name = "molten-iron", amount = 250},
+        {type = "item", name = "stone", amount = 10},
       },
       allow_productivity = true,
       hide_from_signal_gui = false,
@@ -31,12 +32,13 @@ data:extend({
       enabled = false,
       ingredients =
       {
-        {type = "item", name = "copper-ore", amount = 75},
+        {type = "fluid", name = "lava", amount = 500},
       },
       energy_required = 32,
       results =
       {
-        {type = "fluid", name = "molten-copper", amount = 500},
+        {type = "fluid", name = "molten-copper", amount = 250},
+        {type = "item", name = "stone", amount = 10},
       },
       hide_from_signal_gui = false,
       allow_productivity = true,
