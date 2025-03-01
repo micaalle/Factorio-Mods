@@ -1,8 +1,8 @@
-require ("sound-util")
-require ("circuit-connector-sprites")
-require ("util")
-require ("__space-age__.prototypes.entity.circuit-network")
-require ("__space-age__.prototypes.entity.space-platform-hub-cockpit")
+require("sound-util")
+require("circuit-connector-sprites")
+require("util")
+require("__space-age__.prototypes.entity.circuit-network")
+require("__space-age__.prototypes.entity.space-platform-hub-cockpit")
 local sounds = require("__base__.prototypes.entity.sounds")
 local space_age_sounds = require("__space-age__.prototypes.entity.sounds")
 local item_sounds = require("__base__.prototypes.item_sounds")
@@ -14,7 +14,7 @@ local simulations = require("__space-age__.prototypes.factoriopedia-simulations"
 
 local hit_effects = require("__base__.prototypes.entity.hit-effects")
 local sounds = require("__base__.prototypes.entity.sounds")
-local space_age_sounds = require ("__space-age__.prototypes.entity.sounds")
+local space_age_sounds = require("__space-age__.prototypes.entity.sounds")
 local meld = require("meld")
 local simulations = require("__space-age__.prototypes.factoriopedia-simulations")
 local procession_graphic_catalogue_types = require("__base__/prototypes/planet/procession-graphic-catalogue-types")
@@ -43,7 +43,7 @@ data:extend({
     storage_output_offset = {0, 5.6},
     vector_to_place_result = {0, 5.6},
     crafting_categories = {"core-mining"},
-    crafting_speed = 2,  
+    crafting_speed = 2,
     monitor_visualization_tint = {r = 78, g = 173, b = 255},
     working_sound = {
       main_sounds = {
@@ -60,32 +60,28 @@ data:extend({
       },
       max_sounds_per_type = 1
     },
-
-    fluid_boxes =
-    {
+    fluid_boxes = {
       {
         production_type = "input",
         pipe_picture = util.empty_sprite(),
         pipe_picture_frozen = require("__space-age__.prototypes.entity.foundry-pictures").pipe_picture_frozen,
         pipe_covers = pipecoverspictures(),
         volume = 1000,
-        pipe_connections = {{ flow_direction="input", direction = defines.direction.south, position = {-1, 4.9} }}
+        pipe_connections = {{flow_direction = "input", direction = defines.direction.south, position = {-1, 4.9}}}
       },
       {
         production_type = "input",
         pipe_picture = util.empty_sprite(),
-        --pipe_picture_frozen = require("__space-age__.prototypes.entity.foundry-pictures").pipe_picture_frozen,
         pipe_covers = pipecoverspictures(),
         volume = 1000,
-        pipe_connections = {{ flow_direction="input", direction = defines.direction.south, position = {1, 4.9} }}
+        pipe_connections = {{flow_direction = "input", direction = defines.direction.south, position = {1, 4.9}}}
       },
       {
         production_type = "output",
         pipe_picture = util.empty_sprite(),
-        --pipe_picture_frozen = require("__space-age__.prototypes.entity.foundry-pictures").pipe_picture_frozen,
         pipe_covers = pipecoverspictures(),
         volume = 100,
-        pipe_connections = {{ flow_direction="output", direction = defines.direction.north, position = {-1, -4.9} }}
+        pipe_connections = {{flow_direction = "output", direction = defines.direction.north, position = {-1, -4.9}}}
       },
       {
         production_type = "output",
@@ -93,11 +89,10 @@ data:extend({
         pipe_picture_frozen = require("__space-age__.prototypes.entity.foundry-pictures").pipe_picture_frozen,
         pipe_covers = pipecoverspictures(),
         volume = 100,
-        pipe_connections = {{ flow_direction="output", direction = defines.direction.north, position = {1, -4.9} }}
+        pipe_connections = {{flow_direction = "output", direction = defines.direction.north, position = {1, -4.9}}}
       }
     },
     fluid_boxes_off_when_no_fluid_recipe = true,
-
     graphics_set = {
       animation = {
         layers = {
@@ -134,23 +129,51 @@ data:extend({
           },
         },
       },
+      working_visualisations = {
+        {
+          fadeout = true,
+          animation = {
+            priority = "high",
+            width = 704,
+            height = 704,
+            frame_count = 120,
+            animation_speed = 0.5,
+            scale = 0.5,
+            draw_as_glow = true,
+            blend_mode = "additive",
+            stripes = {
+              {
+                filename = "__Casting_Mechanics__/graphics/core-extractor-hr-emission-1.png",
+                width_in_frames = 8,
+                height_in_frames = 8,
+              },
+              {
+                filename = "__Casting_Mechanics__/graphics/core-extractor-hr-emission-2.png",
+                width_in_frames = 8,
+                height_in_frames = 8,
+              },
+            },
+          },
+          reset_animation_when_frozen = true,
+        },
+      },
     },
   },
 })
 
---Recipe for the foundry
-data:extend ({
+-- Recipe for the foundry
+data:extend({
   {
     type = "recipe",
     name = "core-drill",
     category = "crafting-with-fluid",
     ingredients = {
-        { type = "item", name = "advanced-circuit", amount = 50 },
-        { type = "item", name = "iron-gear-wheel", amount = 100 },
-        { type = "item", name = "steel-plate", amount = 300 },
-        { type = "item", name = "electric-engine-unit", amount = 50 },
-        { type = "fluid", name = "lubricant", amount = 300 },
-        { type = "item", name = "concrete", amount = 300 },
+      {type = "item", name = "advanced-circuit", amount = 50},
+      {type = "item", name = "iron-gear-wheel", amount = 100},
+      {type = "item", name = "steel-plate", amount = 300},
+      {type = "item", name = "electric-engine-unit", amount = 50},
+      {type = "fluid", name = "lubricant", amount = 300},
+      {type = "item", name = "concrete", amount = 300},
     },
     enabled = false,
     energy_required = 10,
@@ -169,17 +192,17 @@ data:extend ({
     stack_size = 5,
     weight = 200 * kg
   },
-  })
+})
 
 data:extend({
   {
     type = "recipe-category",
     name = "core-mining"
-  }
-})
-data:extend({
+  },
   {
     type = "recipe-category",
     name = "early-metallurgy"
   }
 })
+
+
