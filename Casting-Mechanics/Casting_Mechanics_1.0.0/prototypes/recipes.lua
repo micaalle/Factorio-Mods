@@ -6,7 +6,7 @@ data:extend({
       category = "early-metallurgy",
       subgroup = "vulcanus-processes",
       order = "a[melting]-b[molten-iron]",
-      auto_recycle = false,
+      auto_recycle = false,    
       enabled = false,
       ingredients =
       {
