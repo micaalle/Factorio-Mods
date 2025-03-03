@@ -1,1 +1,2 @@
 The Auto-Fuel Inserter is a quality of life mod designed to simplify and automate the fueling process in the early stages of your factory. Automatically unlocked, this inserter fuels stone furnaces, boilers, and burner mining drills with coal sourced from a nearby auto-fuel chest. The auto fuel chest has a range of 15 tiles, This feature is specifically meant to enhance quality of life during the early game, offering a change from the running back and forth filling drills and furnaces with coal. Coal will have to be placed in the chest manually
+ 
