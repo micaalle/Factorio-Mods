@@ -77,7 +77,7 @@ data:extend({
     {
       type = "technology",
       name = "core-drill",  
-      icon = "__Casting_Mechanics__/graphics/core-extractor-icon.png",  
+      icon = "__micaalle_Graphics__/graphics/core-extractor/core-extractor-icon.png",  
       icon_size = 64, 
       effects =
       {
@@ -88,6 +88,26 @@ data:extend({
         {
           type = "unlock-recipe",
           recipe = "core-mining"
+        },
+        {
+          type = "unlock-recipe",
+          recipe = "mc-oxidizer"
+        },
+        {
+          type = "unlock-recipe",
+          recipe = "mc-chemical-stager"
+        },
+        {
+          type = "unlock-recipe",
+          recipe = "mc-greenhouse"
+        },
+        {
+          type = "unlock-recipe",
+          recipe = "mc-mill"
+        },
+        {
+          type = "unlock-recipe",
+          recipe = "mc-scrubber"
         },
       },
       prerequisites = {"lubricant"},  
@@ -103,4 +123,6 @@ data:extend({
       order = "a-b-c",
     }
   })
+  
+
   
