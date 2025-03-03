@@ -24,7 +24,7 @@ data:extend({
   {
     type = "assembling-machine",
     name = "core-drill",
-    icon = "__Casting_Mechanics__/graphics/core-extractor-icon-big.png",
+    icon = "__micaalle_Graphics__/graphics/core-extractor/core-extractor-icon-big.png",
     icon_size = 64,
     flags = {"placeable-neutral", "player-creation"},
     minable = {mining_time = 1.5, result = "core-drill"},
@@ -97,7 +97,7 @@ data:extend({
       animation = {
         layers = {
           {
-            filename = "__Casting_Mechanics__/graphics/core-extractor-hr-shadow.png",
+            filename = "__micaalle_Graphics__/graphics/core-extractor/core-extractor-hr-shadow.png",
             priority = "high",
             width = 1400,
             height = 1400,
@@ -116,12 +116,12 @@ data:extend({
             scale = 0.5,
             stripes = {
               {
-                filename = "__Casting_Mechanics__/graphics/core-extractor-hr-animation-1.png",
+                filename = "__micaalle_Graphics__/graphics/core-extractor/core-extractor-hr-animation-1.png",
                 width_in_frames = 8,
                 height_in_frames = 8,
               },
               {
-                filename = "__Casting_Mechanics__/graphics/core-extractor-hr-animation-2.png",
+                filename = "__micaalle_Graphics__/graphics/core-extractor/core-extractor-hr-animation-2.png",
                 width_in_frames = 8,
                 height_in_frames = 8,
               },
@@ -143,12 +143,12 @@ data:extend({
             blend_mode = "additive",
             stripes = {
               {
-                filename = "__Casting_Mechanics__/graphics/core-extractor-hr-emission-1.png",
+                filename = "__micaalle_Graphics__/graphics/core-extractor/core-extractor-hr-emission-1.png",
                 width_in_frames = 8,
                 height_in_frames = 8,
               },
               {
-                filename = "__Casting_Mechanics__/graphics/core-extractor-hr-emission-2.png",
+                filename = "__micaalle_Graphics__/graphics/core-extractor/core-extractor-hr-emission-2.png",
                 width_in_frames = 8,
                 height_in_frames = 8,
               },
@@ -182,7 +182,7 @@ data:extend({
   {
     type = "item",
     name = "core-drill",
-    icon = "__Casting_Mechanics__/graphics/core-extractor-icon.png",
+    icon = "__micaalle_Graphics__/graphics/core-extractor/core-extractor-icon.png",
     subgroup = "smelting-machine",
     order = "d[core-drill]",
     inventory_move_sound = item_sounds.steam_inventory_move,
@@ -204,5 +204,7 @@ data:extend({
     name = "early-metallurgy"
   }
 })
+
+
 
 
