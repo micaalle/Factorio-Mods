@@ -128,6 +128,37 @@ data:extend({
   drop_sound = item_sounds.resource_inventory_move,
   stack_size = 50,
   weight = 3 * kg
-}
+},
+{
+  type = "item",      --PLACEHOLDER IMAGE
+  name = "cm-salt",
+  icon = "__micaalle_Graphics__/graphics/items/salt.PNG",
+  pictures = {
+    { size = 64, filename = "__micaalle_Graphics__/graphics/items/salt.PNG", scale = 0.5, mipmap_count = 4 },
+  },
+  subgroup = "intermediate-product",
+  order = "d[cm-salt]",
+  inventory_move_sound = item_sounds.resource_inventory_move,
+  pick_sound = item_sounds.resource_inventory_pickup,
+  drop_sound = item_sounds.resource_inventory_move,
+  stack_size = 50,
+  weight = 3 * kg
+},
+{
+  type = "item",      --PLACEHOLDER IMAGE
+  name = "cm-sodium",
+  icon = "__micaalle_Graphics__/graphics/items/sodium.PNG",
+  pictures = {
+    { size = 64, filename = "__micaalle_Graphics__/graphics/items/sodium.PNG", scale = 0.5, mipmap_count = 4 },
+  },
+  subgroup = "intermediate-product",
+  order = "d[cm-sodium]",
+  inventory_move_sound = item_sounds.resource_inventory_move,
+  pick_sound = item_sounds.resource_inventory_pickup,
+  drop_sound = item_sounds.resource_inventory_move,
+  stack_size = 50,
+  weight = 3 * kg
+},
   })
+
 
