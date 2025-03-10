@@ -1,364 +1,1580 @@
-local util = require("util")
+require ("tiny-rail-pictures")
 
-local ground_rail_render_layers =
-{
-  stone_path_lower = "rail-stone-path-lower",
-  stone_path = "rail-stone-path",
-  tie = "rail-tie",
-  screw = "rail-screw",
-  metal = "rail-metal"
-}
+local hit_effects = require("__base__/prototypes/entity/hit-effects")
+local sounds = require("__base__/prototypes/entity/sounds")
+local item_sounds = require("__base__.prototypes.item_sounds")
+local simulations = require("__base__.prototypes.factoriopedia-simulations")
 
-local rail_segment_visualisation_endings =
-{
-  filename = "__base__/graphics/entity/rails/rail/rail-segment-visualisations-endings.png",
-  priority = "extra-high",
-  flags = { "low-object" },
-  width = 64,
-  height = 64,
-  scale = 0.25,
-  direction_count = 16,
-  frame_count = 6,
-  usage = "rail"
-}
-
-local function make_new_rail_pictures(keys, elems, max_variations)
-  local function make_sprite_definition(filename, elem, key, variation_count)
-    return
-    {
-      filename = filename,
-      priority = elem.priority or "extra-high",
-      flags = elem.mipmap and { "trilinear-filtering" } or { "low-object" },
-      draw_as_shadow = elem.draw_as_shadow,
-      allow_forced_downscale = elem.allow_forced_downscale,
-      width = key[3][1],
-      height = key[3][2],
-      x = key[2][1],
-      y = key[2][2],
-      scale = 0.25;
-      shift = util.by_pixel(key[4][1], key[4][2]),
-      variation_count = variation_count,
-      usage = "rail"
-    }
-  end
-
-  local res = {}
-  for _ , key in ipairs(keys) do
-    local part = {}
-    local variation_count = key[5] or 1
-    if max_variations then
-      variation_count = math.min(variation_count, max_variations)
-    end
-    if (variation_count > 0) then
-      for _ , elem in ipairs(elems) do
-        local layers = nil
-        local variations = variation_count;
-        if (elem[1] == "segment_visualisation_middle") then
-          variations = nil
-        end
-        if (type(elem[2]) == "table") then
-          layers = { layers = {} }
-          for _, subelem in ipairs(elem[2]) do
-            table.insert(layers.layers, make_sprite_definition(subelem[1], subelem, key, variations))
-          end
-        else
-          layers = make_sprite_definition(elem[2], elem, key, variations)
-        end
-
-        if (elem[1] ~= nil) then
-          part[elem[1]] = layers
-        else
-          part = layers
-        end
-      end
-    end
-
-    res[key[1]] = part
-  end
-  return res
-end
-
-function new_rail_pictures(rail_type)
-  local keys
-  local NOT_USED_POSITION = {0, 0}
-  local NOT_USED_SIZE = {1, 1}
-  local NOT_USED_SHIFT = {0, 0}
-  if rail_type == "straight" then
-    keys =
-    {
-      {"north",     { 0,  256 }, {256, 256}, {0,0}, 8},
-      {"northeast", { 0, 2048 }, {384, 384}, {0,0}, 3},
-      {"east",      { 0,    0 }, {256, 256}, {0,0}, 8},
-      {"southeast", { 0,  896 }, {384, 384}, {0,0}, 3},
-      {"south",     NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"southwest", NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"west",      NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"northwest", NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0}
-    }
-  elseif rail_type == "half-diagonal" then
-    keys =
-    {
-      {"north",     { 0, 1280 }, {384, 384}, {0,0}, 3},
-      {"northeast", { 0, 1664 }, {384, 384}, {0,0}, 3},
-      {"east",      { 0, 2432 }, {384, 384}, {0,0}, 3},
-      {"southeast", { 0,  512 }, {384, 384}, {0,0}, 3},
-      {"south",     NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"southwest", NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"west",      NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"northwest", NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0}
-    }
-  elseif rail_type == "curved-a" then
-    keys =
-    {
-      {"north",     { 2048,  3 * 512 }, {512, 512}, {0,0}, 4},-- piece 04
-      {"northeast", { 2048, 12 * 512 }, {512, 512}, {0,0}, 4},-- piece 13
-      {"east",      { 2048,  7 * 512 }, {512, 512}, {0,0}, 4},-- piece 08
-      {"southeast", { 2048,  0 * 512 }, {512, 512}, {0,0}, 4},-- piece 01
-      {"south",     { 2048, 11 * 512 }, {512, 512}, {0,0}, 4},-- piece 12
-      {"southwest", { 2048,  4 * 512 }, {512, 512}, {0,0}, 4},-- piece 05
-      {"west",      { 2048, 15 * 512 }, {512, 512}, {0,0}, 4},-- piece 16
-      {"northwest", { 2048,  8 * 512 }, {512, 512}, {0,0}, 4},-- piece 09
-    }
-  elseif rail_type == "curved-b" then
-    keys =
-    {
-      {"north",     { 2048,  2 * 512 }, {512, 512}, {0,0}, 4},-- piece 03
-      {"northeast", { 2048, 13 * 512 }, {512, 512}, {0,0}, 4},-- piece 14
-      {"east",      { 2048,  6 * 512 }, {512, 512}, {0,0}, 4},-- piece 07
-      {"southeast", { 2048,  1 * 512 }, {512, 512}, {0,0}, 4},-- piece 02
-      {"south",     { 2048, 10 * 512 }, {512, 512}, {0,0}, 4},-- piece 11
-      {"southwest", { 2048,  5 * 512 }, {512, 512}, {0,0}, 4},-- piece 06
-      {"west",      { 2048, 14 * 512 }, {512, 512}, {0,0}, 4},-- piece 15
-      {"northwest", { 2048,  9 * 512 }, {512, 512}, {0,0}, 4},-- piece 10
-    }
-  end
-  local elems =
-  {
-    { "metals",                       "__base__/graphics/entity/rails/rail/rail-metals.png",             mipmap = true },
-    { "backplates",                   "__base__/graphics/entity/rails/rail/rail-backplates.png",         mipmap = true },
-    { "ties",                         "__base__/graphics/entity/rails/rail/rail-ties.png"                              },
-    { "stone_path",                   "__base__/graphics/entity/rails/rail/rail-stone-path-inside.png"                 },
-    { "stone_path_background",        "__base__/graphics/entity/rails/rail/rail-stone-path.png"                        },
-    { "segment_visualisation_middle", "__base__/graphics/entity/rails/rail/rail-segment-visualisations-middle.png"     },
-  }
-
-  local res = make_new_rail_pictures(keys, elems)
-  res["rail_endings"] =
-  {
-    sheets =
-    {
-      {
-        filename = "__base__/graphics/entity/rails/rail/rail-endings-background.png",
-        priority = "high",
-        flags = { "low-object" },
-        width = 256,
-        height = 256,
-        scale = 0.25,
-        usage = "rail"
-      },
-      {
-        filename = "__base__/graphics/entity/rails/rail/rail-endings-foreground.png",
-        priority = "high",
-        flags = { "trilinear-filtering" },
-        width = 256,
-        height = 256,
-        scale = 0.25,
-        usage = "rail"
-      }
-    }
-  }
-  res["render_layers"] = ground_rail_render_layers
-  res["segment_visualisation_endings"] = rail_segment_visualisation_endings
-  return res
-end
-
-function new_rail_remnants_pictures(rail_type)
-  local keys
-  local NOT_USED_POSITION = {0, 0}
-  local NOT_USED_SIZE = {1, 1}
-  local NOT_USED_SHIFT = {0, 0}
-  if rail_type == "straight" then
-    keys =
-    {
-      {"north",     { 0,  256 }, {256, 256}, {0,0}, 8},
-      {"northeast", { 0, 2048 }, {384, 384}, {0,0}, 3},
-      {"east",      { 0,    0 }, {256, 256}, {0,0}, 8},
-      {"southeast", { 0,  896 }, {384, 384}, {0,0}, 3},
-      {"south",     NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"southwest", NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"west",      NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"northwest", NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0}
-    }
-  elseif rail_type == "half-diagonal" then
-    keys =
-    {
-      {"north",     { 0, 1280 }, {384, 384}, {0,0}, 3},
-      {"northeast", { 0, 1664 }, {384, 384}, {0,0}, 3},
-      {"east",      { 0, 2432 }, {384, 384}, {0,0}, 3},
-      {"southeast", { 0,  512 }, {384, 384}, {0,0}, 3},
-      {"south",     NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"southwest", NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"west",      NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0},
-      {"northwest", NOT_USED_POSITION, NOT_USED_SIZE, NOT_USED_SHIFT, 0}
-    }
-  elseif rail_type == "curved-a" then
-    keys =
-    {
-      {"north",     { 2048,  3 * 512 }, {512, 512}, {0,0}, 4},-- piece 04
-      {"northeast", { 2048, 12 * 512 }, {512, 512}, {0,0}, 4},-- piece 13
-      {"east",      { 2048,  7 * 512 }, {512, 512}, {0,0}, 4},-- piece 08
-      {"southeast", { 2048,  0 * 512 }, {512, 512}, {0,0}, 4},-- piece 01
-      {"south",     { 2048, 11 * 512 }, {512, 512}, {0,0}, 4},-- piece 12
-      {"southwest", { 2048,  4 * 512 }, {512, 512}, {0,0}, 4},-- piece 05
-      {"west",      { 2048, 15 * 512 }, {512, 512}, {0,0}, 4},-- piece 16
-      {"northwest", { 2048,  8 * 512 }, {512, 512}, {0,0}, 4},-- piece 09
-    }
-  elseif rail_type == "curved-b" then
-    keys =
-    {
-      {"north",     { 2048,  2 * 512 }, {512, 512}, {0,0}, 4},-- piece 03
-      {"northeast", { 2048, 13 * 512 }, {512, 512}, {0,0}, 4},-- piece 14
-      {"east",      { 2048,  6 * 512 }, {512, 512}, {0,0}, 4},-- piece 07
-      {"southeast", { 2048,  1 * 512 }, {512, 512}, {0,0}, 4},-- piece 02
-      {"south",     { 2048, 10 * 512 }, {512, 512}, {0,0}, 4},-- piece 11
-      {"southwest", { 2048,  5 * 512 }, {512, 512}, {0,0}, 4},-- piece 06
-      {"west",      { 2048, 14 * 512 }, {512, 512}, {0,0}, 4},-- piece 15
-      {"northwest", { 2048,  9 * 512 }, {512, 512}, {0,0}, 4},-- piece 10
-    }
-  end
-  local elems =
-  {
-    { "metals",                "__base__/graphics/entity/rails/rail/remnants/rail-remnants-metals.png",             mipmap = true, allow_forced_downscale = true },
-    { "backplates",            "__base__/graphics/entity/rails/rail/remnants/rail-remnants-backplates.png",         mipmap = true, allow_forced_downscale = true },
-    { "ties",                  "__base__/graphics/entity/rails/rail/remnants/rail-remnants-ties.png"                             , allow_forced_downscale = true },
-    { "stone_path",            "__base__/graphics/entity/rails/rail/remnants/rail-remnants-stone-path-inside.png"                , allow_forced_downscale = true },
-    { "stone_path_background", "__base__/graphics/entity/rails/rail/remnants/rail-remnants-stone-path.png"                       , allow_forced_downscale = true }
-  }
-
-  local res = make_new_rail_pictures(keys, elems)
-  res["rail_endings"] =
-  {
-    sheets =
-    {
-      {
-        filename = "__base__/graphics/entity/rails/rail/rail-endings-background.png",
-        priority = "high",
-        flags = { "low-object" },
-        width = 256,
-        height = 256,
-        scale = 0.25,
-        usage = "rail"
-      },
-      {
-        filename = "__base__/graphics/entity/rails/rail/rail-endings-foreground.png",
-        priority = "high",
-        flags = { "trilinear-filtering" },
-        width = 256,
-        height = 256,
-        scale = 0.25,
-        usage = "rail"
-      }
-    }
-  }
-  res["render_layers"] = ground_rail_render_layers
-  return res
-end
-
-elevated_rail_pictures = new_rail_pictures
-
-local function rail_fences_keys(rail_type)
-  local keys = nil
-  if rail_type == "straight" then
-    keys =
-    {
-      {"north",     { 0, 768 * 1 }, {768, 768}, {0,0}, 1},
-      {"northeast", { 0, 768 * 6 }, {768, 768}, {0,0}, 1},
-      {"east",      { 0, 768 * 0 }, {768, 768}, {0,0}, 1},
-      {"southeast", { 0, 768 * 3 }, {768, 768}, {0,0}, 1},
-      {"south",     nil, nil, nil, 0},
-      {"southwest", nil, nil, nil, 0},
-      {"west",      nil, nil, nil, 0},
-      {"northwest", nil, nil, nil, 0}
-    }
-  elseif rail_type == "half-diagonal" then
-    keys =
-    {
-      {"north",     { 0, 768 * 4 }, {768, 768}, {0,0}, 2},
-      {"northeast", { 0, 768 * 5 }, {768, 768}, {0,0}, 2},
-      {"east",      { 0, 768 * 7 }, {768, 768}, {0,0}, 2},
-      {"southeast", { 0, 768 * 2 }, {768, 768}, {0,0}, 2},
-      {"south",     nil, nil, nil, 0},
-      {"southwest", nil, nil, nil, 0},
-      {"west",      nil, nil, nil, 0},
-      {"northwest", nil, nil, nil, 0}
-    }
-  elseif rail_type == "curved-a" then
-    keys =
-    {
-      {"north",     { 768 * 2, 1 * 768 }, {768, 768}, {0,0}, 2}, -- piece 04
-      {"northeast", { 768 * 2, 6 * 768 }, {768, 768}, {0,0}, 2}, -- piece 13
-      {"east",      { 768 * 2, 3 * 768 }, {768, 768}, {0,0}, 2}, -- piece 08
-      {"southeast", { 768 * 2, 0 * 768 }, {768, 768}, {0,0}, 2}, -- piece 01
-      {"south",     { 768 * 2, 5 * 768 }, {768, 768}, {0,0}, 2}, -- piece 12
-      {"southwest", { 768 * 2, 2 * 768 }, {768, 768}, {0,0}, 2}, -- piece 05
-      {"west",      { 768 * 2, 7 * 768 }, {768, 768}, {0,0}, 2}, -- piece 16
-      {"northwest", { 768 * 2, 4 * 768 }, {768, 768}, {0,0}, 2}, -- piece 09
-    }
-  elseif rail_type == "curved-b" then
-    keys =
-    {
-      {"north",     { 768 * 4, 1 * 768 }, {768, 768}, {0,0}, 2}, -- piece 03
-      {"northeast", { 768 * 4, 6 * 768 }, {768, 768}, {0,0}, 2}, -- piece 14
-      {"east",      { 768 * 4, 3 * 768 }, {768, 768}, {0,0}, 2}, -- piece 07
-      {"southeast", { 768 * 4, 0 * 768 }, {768, 768}, {0,0}, 2}, -- piece 02
-      {"south",     { 768 * 4, 5 * 768 }, {768, 768}, {0,0}, 2}, -- piece 11
-      {"southwest", { 768 * 4, 2 * 768 }, {768, 768}, {0,0}, 2}, -- piece 06
-      {"west",      { 768 * 4, 7 * 768 }, {768, 768}, {0,0}, 2}, -- piece 15
-      {"northwest", { 768 * 4, 4 * 768 }, {768, 768}, {0,0}, 2}, -- piece 10
-    }
-  end
-  return keys
-end
-
-
-function dummy_rails_ramp_pictures()
+local drive_over_tie = function()
   return
   {
-    north = {},
-    northeast = {},
-    east = {},
-    southeast = {},
-    south = {},
-    southwest = {},
-    west = {},
-    northwest = {},
-    render_layers = {},
+    type = "play-sound",
+    sound = sound_variations("__base__/sound/train-tie", 6, 0.4, { volume_multiplier("main-menu", 2.4), volume_multiplier("driving", 1.3) } )
   }
 end
 
-function shift_rail_gfx(rail_graphics, shift)
-  for k, tab in pairs(rail_graphics) do
-    if (k ~= "segment_visualisation_endings") and (type(tab) == "table") then
-      if tab.filename ~= nil then
-        if tab.draw_as_shadow then
-          tab.shift = util.add_shift(tab.shift, {3.87, 2.75 - 3}) -- { -shift[2] - 0.5, shift[1] })
-        else
-          tab.shift = util.add_shift(tab.shift, shift)
-        end
-      else
-        shift_rail_gfx(tab, shift)
-      end
-    end
-  end
-  return rail_graphics
+local rolling_stock_back_light = function()
+  return
+  {
+    {
+      minimum_darkness = 0.3,
+      color = {1, 0.1, 0.05, 0},
+      shift = {-0.6, 3.5},
+      size = 2,
+      intensity = 0.6,
+      add_perspective = true
+    },
+    {
+      minimum_darkness = 0.3,
+      color = {1, 0.1, 0.05, 0},
+      shift = {0.6, 3.5},
+      size = 2,
+      intensity = 0.6,
+      add_perspective = true
+    }
+  }
 end
 
-function shift_fence_gfx(fence_graphics, shift)
-  shift_rail_gfx(fence_graphics.side_A.fence, shift)
-  shift_rail_gfx(fence_graphics.side_B.fence, shift)
-  for i = 1, 4 do
-    shift_rail_gfx(fence_graphics.side_A.ends[i], shift)
-    shift_rail_gfx(fence_graphics.side_B.ends[i], shift)
-  end
-  return fence_graphics
+local rolling_stock_stand_by_light = function()
+  return
+  {
+    {
+      minimum_darkness = 0.3,
+      color = {0.05, 0.2, 1, 0},
+      shift = {-0.6, -3.5},
+      size = 2,
+      intensity = 0.5,
+      add_perspective = true
+    },
+    {
+      minimum_darkness = 0.3,
+      color = {0.05, 0.2, 1, 0},
+      shift = {0.6, -3.5},
+      size = 2,
+      intensity = 0.5,
+      add_perspective = true
+    }
+  }
 end
+
+curved_rail_ending_shifts = function()
+  local px = 1.0/64
+  return
+    {
+      {-px, 0}, {0, px},
+      {px, 0}, {0, px},
+      {0, -px}, {-px, 0},
+      {0, px}, {-px, 0},
+      {px, 0}, {0, -px},
+      {-px, 0}, {0, -px},
+      {0, px}, {px, 0},
+      {0, -px}, {px, 0}
+    }
+end
+
+rail_8shifts_vector = function(dx, dy)
+  return
+    {
+      {  dx,  dy },
+      { -dx,  dy },
+      { -dy,  dx },
+      { -dy, -dx },
+      { -dx, -dy },
+      {  dx, -dy },
+      {  dy, -dx },
+      {  dy,  dx }
+    }
+end
+
+local standard_train_wheels =
+{
+  rotated = util.sprite_load("__base__/graphics/entity/train-wheel/train-wheel",
+    {
+      priority = "very-low",
+      direction_count = 256,
+      scale = 0.25,
+      shift = util.by_pixel(0, 8),
+      usage = "train"
+    }
+  )
+}
+
+local locomotive_reflection = function()
+  return
+  {
+    pictures =
+    {
+      filename = "__base__/graphics/entity/locomotive/reflection/locomotive-reflection.png",
+      priority = "extra-high",
+      width = 20,
+      height = 52,
+      shift = util.by_pixel(0, 40),
+      variation_count = 1,
+      scale = 2.5
+    },
+    rotate = true,
+    orientation_to_variation = false
+  }
+end
+
+data:extend(
+{
+  {
+    type = "straight-rail",
+    name = "small-straight-rail",
+    order = "a[ground-rail]-a[small-straight-rail]",
+    icon = "__base__/graphics/icons/rail.png",
+    collision_box = {{-1, -1}, {1, 1}}, -- has custommly generated box, but the prototype needs something that is used to generate building smokes
+    flags = {"placeable-neutral", "player-creation", "building-direction-8-way"},
+    minable = {mining_time = 0.2, result = "rail", count = 1},
+    max_health = 200,
+    corpse = "straight-rail-remnants",
+    dying_explosion =
+    {
+      name = "rail-explosion"
+    },
+    resistances =
+    {
+      {
+        type = "fire",
+        percent = 100
+      },
+      {
+        type = "acid",
+        percent = 80
+      }
+    },
+    -- collision box is hardcoded for rails as to avoid unexpected changes in the way rail blocks are merged
+    selection_box = {{-1.7, -0.8}, {1.7, 0.8}},
+    damaged_trigger_effect = hit_effects.wall(),
+    pictures = new_rail_pictures("straight"),
+    placeable_by = {item = "rail", count = 1},
+    walking_sound = sounds.rails,
+    extra_planner_goal_penalty = -4,
+    factoriopedia_alternative = "straight-rail"
+  },
+  {
+    type = "half-diagonal-rail",
+    name = "small-half-diagonal-rail",
+    order = "a[ground-rail]-b[small-half-diagonal-rail]",
+    deconstruction_alternative = "small-straight-rail",
+    icon = "__base__/graphics/icons/half-diagonal-rail.png",
+    collision_box = {{-0.75, -2.236}, {0.75, 2.236}}, -- has custommly generated box, but the prototype needs something that is used to generate building smokes
+    tile_height = 2,
+    extra_planner_goal_penalty = -4,
+    flags = {"placeable-neutral", "player-creation", "building-direction-8-way"},
+    minable = {mining_time = 0.2, result = "rail", count = 2},
+    max_health = 200,
+    corpse = "half-diagonal-rail-remnants",
+    dying_explosion =
+    {
+      {
+        name = "rail-explosion",
+        offset = {0.9, 2.2}
+      },
+      {
+        name = "rail-explosion"
+      },
+      {
+        name = "rail-explosion",
+        offset = {-1.2, -2}
+      }
+    },
+    resistances =
+    {
+      {
+        type = "fire",
+        percent = 100
+      },
+      {
+        type = "acid",
+        percent = 80
+      }
+    },
+    -- collision box is hardcoded for rails as to avoid unexpected changes in the way rail blocks are merged
+    selection_box = {{-1.7, -0.8}, {1.7, 0.8}},
+    damaged_trigger_effect = hit_effects.wall(),
+    pictures = new_rail_pictures("half-diagonal"),
+    placeable_by = {item = "rail", count = 2},
+    walking_sound = sounds.rails,
+    extra_planner_penalty = 0,
+    factoriopedia_alternative = "straight-rail"
+  },
+  {
+    type = "curved-rail-a",
+    name = "small-curved-rail-a",
+    order = "a[ground-rail]-c[small-curved-rail-a]",
+    deconstruction_alternative = "small-straight-rail",
+    icon = "__base__/graphics/icons/curved-rail.png",
+    collision_box = {{-0.75, -2.516}, {0.75, 2.516}}, -- has custommly generated box, but the prototype needs something that is used to generate building smokes
+    flags = {"placeable-neutral", "player-creation", "building-direction-8-way"},
+    minable = {mining_time = 0.2, result = "rail", count = 3},
+    max_health = 200,
+    corpse = "curved-rail-a-remnants",
+    dying_explosion =
+    {
+      {
+        name = "rail-explosion",
+        offset = {0.9, 2.2}
+      },
+      {
+        name = "rail-explosion"
+      },
+      {
+        name = "rail-explosion",
+        offset = {-1.2, -2}
+      }
+    },
+    resistances =
+    {
+      {
+        type = "fire",
+        percent = 100
+      },
+      {
+        type = "acid",
+        percent = 80
+      }
+    },
+    -- collision box is hardcoded for rails as to avoid unexpected changes in the way rail blocks are merged
+    selection_box = {{-1.7, -0.8}, {1.7, 0.8}},
+    damaged_trigger_effect = hit_effects.wall(),
+    pictures = new_rail_pictures("curved-a"),
+    placeable_by = {item = "rail", count = 3},
+    walking_sound = sounds.rails,
+    extra_planner_penalty = 0.5,
+    deconstruction_marker_positions = rail_8shifts_vector(-0.248, -0.533),
+    factoriopedia_alternative = "straight-rail"
+  },
+  {
+    type = "curved-rail-b",
+    name = "small-curved-rail-b",
+    order = "a[ground-rail]-d[small-curved-rail-b]",
+    deconstruction_alternative = "small-straight-rail",
+    icon = "__base__/graphics/icons/curved-rail-b.png",
+    collision_box = {{-0.75, -2.441}, {0.75, 2.441}}, -- has custommly generated box, but the prototype needs something that is used to generate building smokes
+    flags = {"placeable-neutral", "player-creation", "building-direction-8-way"},
+    minable = {mining_time = 0.2, result = "small-rail", count = 3},
+    max_health = 200,
+    corpse = "curved-rail-b-remnants",
+    dying_explosion =
+    {
+      {
+        name = "rail-explosion",
+        offset = {0.9, 2.2}
+      },
+      {
+        name = "rail-explosion"
+      },
+      {
+        name = "rail-explosion",
+        offset = {-1.2, -2}
+      }
+    },
+    resistances =
+    {
+      {
+        type = "fire",
+        percent = 100
+      },
+      {
+        type = "acid",
+        percent = 80
+      }
+    },
+    -- collision box is hardcoded for rails as to avoid unexpected changes in the way rail blocks are merged
+    selection_box = {{-1.7, -0.8}, {1.7, 0.8}},
+    damaged_trigger_effect = hit_effects.wall(),
+    pictures = new_rail_pictures("curved-b"),
+    placeable_by = {item = "rail", count = 3},
+    walking_sound = sounds.rails,
+    extra_planner_penalty = 0.5,
+    deconstruction_marker_positions = rail_8shifts_vector(-0.309, -0.155),
+    factoriopedia_alternative = "straight-rail"
+  },
+  {
+    type = "rail-ramp",
+    name = "small-dummy-rail-ramp",
+    localised_name = "dummy",
+    hidden = true,
+    icons =
+    {
+      {icon = "__base__/graphics/icons/curved-rail.png"},
+      {icon = "__core__/graphics/icons/unknown.png"}
+    },
+    collision_box = {{-1.8, -7.8}, {1.8, 7.8}}, -- has custommly generated box, but the prototype needs something that is used to generate building smokes
+    selection_box = {{-1.7, -0.8}, {1.7, 0.8}},
+    pictures = dummy_rails_ramp_pictures(),
+    forced_fence_segment_count = 2,
+    walking_sound = sounds.rails,
+    extra_planner_penalty = 0.5,
+    support_range = 9
+  },
+  {
+    type = "elevated-straight-rail",
+    name = "small-dummy-elevated-straight-rail",
+    hidden = true,
+    icons =
+    {
+      {icon = "__base__/graphics/icons/curved-rail.png"},
+      {icon = "__core__/graphics/icons/unknown.png"}
+    },
+    localised_name = "dummy",
+    collision_box = {{-1, -1}, {1, 1}}, -- has custommly generated box, but the prototype needs something that is used to generate building smokes
+    -- collision box is hardcoded for rails as to avoid unexpected changes in the way rail blocks are merged
+    selection_box = {{-1.7, -0.8}, {1.7, 0.8}},
+    pictures = elevated_rail_pictures("straight")
+  },
+  {
+    type = "elevated-half-diagonal-rail",
+    name = "small-dummy-elevated-half-diagonal-rail",
+    hidden = true,
+    icons =
+    {
+      {icon = "__base__/graphics/icons/curved-rail.png"},
+      {icon = "__core__/graphics/icons/unknown.png"}
+    },
+    localised_name = "dummy",
+    collision_box = {{-0.75, -2.236}, {0.75, 2.236}}, -- has custommly generated box, but the prototype needs something that is used to generate building smokes
+    tile_height = 2,
+    selection_box = {{-1.7, -0.8}, {1.7, 0.8}},
+    pictures = elevated_rail_pictures("half-diagonal")
+  },
+  {
+    type = "elevated-curved-rail-a",
+    name = "small-dummy-elevated-small-curved-rail-a",
+    hidden = true,
+    icons =
+    {
+      {icon = "__base__/graphics/icons/curved-rail.png"},
+      {icon = "__core__/graphics/icons/unknown.png"}
+    },
+    localised_name = "dummy",
+    collision_box = {{-0.75, -2.516}, {0.75, 2.516}}, -- has custommly generated box, but the prototype needs something that is used to generate building smokes
+    selection_box = {{-1.7, -0.8}, {1.7, 0.8}},
+    damaged_trigger_effect = hit_effects.wall(),
+    pictures = elevated_rail_pictures("curved-a")
+  },
+  {
+    type = "elevated-curved-rail-b",
+    name = "small-dummy-elevated-small-curved-rail-b",
+    hidden = true,
+    icons =
+    {
+      {icon = "__base__/graphics/icons/curved-rail.png"},
+      {icon = "__core__/graphics/icons/unknown.png"}
+    },
+    localised_name = "dummy",
+    collision_box = {{-0.75, -2.441}, {0.75, 2.441}}, -- has custommly generated box, but the prototype needs something that is used to generate building smokes
+    selection_box = {{-1.7, -0.8}, {1.7, 0.8}},
+    pictures = elevated_rail_pictures("curved-b")
+  },
+  {
+    type = "rail-support",
+    name = "small-dummy-rail-support",
+    localised_name = "dummy",
+    hidden = true,
+    icons =
+    {
+      {icon = "__base__/graphics/icons/curved-rail.png"},
+      {icon = "__core__/graphics/icons/unknown.png"}
+    },
+    flags = {"placeable-neutral", "player-creation", "building-direction-16-way", "filter-directions"},
+    max_health = 1000,
+    collision_box = {{-1.8, -0.8}, {1.8, 0.8}},
+    selection_box = {{-1.9, -0.9}, {1.9, 0.9}},
+    graphics_set = { structure = util.empty_animation() }
+  },
+  {
+    type = "locomotive",
+    name = "small-locomotive",
+    icon = "__base__/graphics/icons/locomotive.png",
+    flags = {"placeable-neutral", "player-creation", "placeable-off-grid"},
+    minable = {mining_time = 0.5, result = "small-locomotive"},
+    mined_sound = sounds.deconstruct_large(0.8),
+    max_health = 1000,
+    deliver_category = "vehicle",
+    corpse = "locomotive-remnants",
+    dying_explosion = "locomotive-explosion",
+    factoriopedia_simulation = simulations.factoriopedia_locomotive,
+    collision_box = {{-0.6, -2.6}, {0.6, 2.6}},
+    selection_box = {{-1, -3}, {1, 3}},
+    damaged_trigger_effect = hit_effects.entity(),
+    drawing_box_vertical_extension = 1,
+    alert_icon_shift = util.by_pixel(0, -24),
+    weight = 2000,
+    max_speed = 1.2,
+    max_power = "600kW",
+    reversing_power_modifier = 0.6,
+    braking_force = 10,
+    friction_force = 0.50,
+    vertical_selection_shift = -0.5,
+    air_resistance = 0.0075, -- this is a percentage of current speed that will be subtracted
+    connection_distance = 3,
+    joint_distance = 4,
+    energy_per_hit_point = 5,
+    icons_positioning =
+    {
+      {inventory_index = defines.inventory.fuel, shift = {0, 0.3}, max_icons_per_row = 3},
+    },
+    resistances =
+    {
+      {
+        type = "fire",
+        decrease = 15,
+        percent = 50
+      },
+      {
+        type = "physical",
+        decrease = 15,
+        percent = 30
+      },
+      {
+        type = "impact",
+        decrease = 50,
+        percent = 60
+      },
+      {
+        type = "explosion",
+        decrease = 15,
+        percent = 30
+      },
+      {
+        type = "acid",
+        decrease = 3,
+        percent = 20
+      }
+    },
+    energy_source =
+    {
+      type = "burner",
+      fuel_categories = {"chemical"},
+      effectivity = 1,
+      fuel_inventory_size = 3,
+      smoke =
+      {
+        {
+          name = "train-smoke",
+          deviation = {0.3, 0.3},
+          frequency = 100,
+          position = {0, 0},
+          starting_frame = 0,
+          starting_frame_deviation = 60,
+          height = 2,
+          height_deviation = 0.5,
+          starting_vertical_speed = 0.2,
+          starting_vertical_speed_deviation = 0.1
+        }
+      }
+    },
+    front_light =
+    {
+      {
+        type = "oriented",
+        minimum_darkness = 0.3,
+        picture =
+        {
+          filename = "__core__/graphics/light-cone.png",
+          priority = "extra-high",
+          flags = { "light" },
+          scale = 1,
+          width = 200,
+          height = 200
+        },
+        shift = {-0.6, -16},
+        size = 2,
+        intensity = 0.6,
+        color = {r = 1.0, g = 0.9, b = 0.9}
+      },
+      {
+        type = "oriented",
+        minimum_darkness = 0.3,
+        picture =
+        {
+          filename = "__core__/graphics/light-cone.png",
+          priority = "extra-high",
+          flags = { "light" },
+          scale = 1,
+          width = 200,
+          height = 200
+        },
+        shift = {0.6, -16},
+        size = 2,
+        intensity = 0.6,
+        color = {r = 1.0, g = 0.9, b = 0.9}
+      }
+    },
+    back_light = rolling_stock_back_light(),
+    stand_by_light = rolling_stock_stand_by_light(),
+    color = {r = 0.92, g = 0.07, b = 0, a = 1},
+    default_copy_color_from_train_stop = true,
+    pictures =
+    {
+      rotated =
+      {
+        layers =
+        {
+          util.sprite_load("__base__/graphics/entity/locomotive/locomotive",
+            {
+              dice = 4,
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              direction_count = 256,
+              scale = 0.25,
+              usage = "train"
+            }
+          ),
+          util.sprite_load("__base__/graphics/entity/locomotive/locomotive-mask",
+            {
+              dice = 4,
+              priority = "very-low",
+              flags = { "mask" },
+              apply_runtime_tint = true,
+              tint_as_overlay = true,
+              allow_low_quality_rotation = true,
+              direction_count = 256,
+              scale = 0.25,
+              usage = "train"
+            }
+          ),
+          util.sprite_load("__base__/graphics/entity/locomotive/locomotive-shadow",
+            {
+              dice = 4,
+              priority = "very-low",
+              flags = { "shadow" },
+              draw_as_shadow = true,
+              allow_low_quality_rotation = true,
+              direction_count = 256,
+              scale = 0.25,
+              usage = "train"
+            }
+          )
+        }
+      },
+    },
+    front_light_pictures =
+    {
+      rotated =
+      {
+        layers =
+        {
+          util.sprite_load("__base__/graphics/entity/locomotive/locomotive-lights",
+            {
+              dice = 4,
+              priority = "very-low",
+              blend_mode = "additive",
+              draw_as_light = true,
+              allow_low_quality_rotation = true,
+              direction_count = 256,
+              scale = 0.5
+            }
+          )
+        }
+      },
+    },
+    minimap_representation =
+    {
+      filename = "__base__/graphics/entity/locomotive/minimap-representation/locomotive-minimap-representation.png",
+      flags = {"icon"},
+      size = {20, 40},
+      scale = 0.25
+    },
+    selected_minimap_representation =
+    {
+      filename = "__base__/graphics/entity/locomotive/minimap-representation/locomotive-selected-minimap-representation.png",
+      flags = {"icon"},
+      size = {20, 40},
+      scale = 0.25
+    },
+    wheels = standard_train_wheels,
+    stop_trigger =
+    {
+      -- left side
+      {
+        type = "create-trivial-smoke",
+        repeat_count = 125,
+        smoke_name = "smoke-train-stop",
+        initial_height = 0,
+        -- smoke goes to the left
+        speed = {-0.03, 0},
+        speed_multiplier = 0.75,
+        speed_multiplier_deviation = 1.1,
+        offset_deviation = {{-0.75, -2.7}, {-0.3, 2.7}}
+      },
+      -- right side
+      {
+        type = "create-trivial-smoke",
+        repeat_count = 125,
+        smoke_name = "smoke-train-stop",
+        initial_height = 0,
+        -- smoke goes to the right
+        speed = {0.03, 0},
+        speed_multiplier = 0.75,
+        speed_multiplier_deviation = 1.1,
+        offset_deviation = {{0.3, -2.7}, {0.75, 2.7}}
+      },
+      {
+        type = "play-sound",
+        sound = sounds.train_brakes
+      },
+      {
+        type = "play-sound",
+        sound = sounds.train_brake_screech
+      }
+    },
+    drive_over_tie_trigger = drive_over_tie(),
+    drive_over_tie_trigger_minimal_speed = 0.5,
+    tie_distance = 50,
+    impact_category = "metal-large",
+    working_sound =
+    {
+      main_sounds =
+      {
+        {
+          sound =
+          {
+            filename = "__base__/sound/train-engine-driving.ogg",
+            volume = 0.7,
+            modifiers =
+            {
+              volume_multiplier("main-menu", 1.8),
+              volume_multiplier("driving", 0.7),
+              volume_multiplier("tips-and-tricks", 0.8),
+              volume_multiplier("elevation", 0.5)
+            },
+          },
+          match_volume_to_activity = true,
+          activity_to_volume_modifiers =
+          {
+            multiplier = 1.5,
+            offset = 1.0,
+          },
+          match_speed_to_activity = true,
+          activity_to_speed_modifiers =
+          {
+            multiplier = 0.6,
+            minimum = 1.0,
+            maximum = 1.15,
+            offset = 0.2,
+          }
+        },
+        {
+          sound =
+          {
+            filename = "__base__/sound/train-engine.ogg",
+            volume = 0.35,
+            modifiers =
+            {
+              volume_multiplier("main-menu", 1.8),
+              volume_multiplier("driving", 0.9),
+              volume_multiplier("tips-and-tricks", 0.8)
+            },
+          },
+          match_volume_to_activity = true,
+          activity_to_volume_modifiers =
+          {
+            multiplier = 1.75,
+            offset = 1.7,
+            inverted = true
+          },
+        },
+        {
+          sound =
+          {
+            filename = "__base__/sound/train-wheels.ogg",
+            volume = 1.0,
+            modifiers =
+            {
+              volume_multiplier("main-menu", 2.0),
+              volume_multiplier("driving", 0.35),
+              volume_multiplier("elevation", 0.5)
+            },
+          },
+          match_volume_to_activity = true,
+          activity_to_volume_modifiers =
+          {
+            multiplier = 1.5,
+            maximum = 1.0,
+            offset = 1.1,
+          },
+          match_speed_to_activity = true,
+          activity_to_speed_modifiers =
+          {
+            multiplier = 0.6,
+            minimum = 1.0,
+            maximum = 1.2,
+            offset = 0.2,
+          },
+        },
+      },
+      max_sounds_per_type = 2,
+      activate_sound = { filename = "__base__/sound/train-engine-start.ogg", volume = 0.35 },
+      deactivate_sound = { filename = "__base__/sound/train-engine-stop.ogg", volume = 0.35 },
+    },
+    open_sound = { filename = "__base__/sound/train-door-open.ogg", volume=0.5 },
+    close_sound = { filename = "__base__/sound/train-door-close.ogg", volume = 0.4 },
+    water_reflection = locomotive_reflection(),
+    allow_remote_driving = true
+  },
+
+  {
+    type = "cargo-wagon",
+    name = "small-cargo-wagon",
+    icon = "__base__/graphics/icons/cargo-wagon.png",
+    flags = {"placeable-neutral", "player-creation", "placeable-off-grid"},
+    inventory_size = 40,
+    minable = {mining_time = 0.5, result = "small-cargo-wagon"},
+    mined_sound = sounds.deconstruct_large(0.8),
+    max_health = 600,
+    deliver_category = "vehicle",
+    corpse = "cargo-wagon-remnants",
+    dying_explosion = "cargo-wagon-explosion",
+    factoriopedia_simulation = simulations.factoriopedia_cargo_wagon,
+    collision_box = {{-0.6, -2.4}, {0.6, 2.4}},
+    selection_box = {{-1, -2.703125}, {1, 3.296875}},
+    damaged_trigger_effect = hit_effects.entity(),
+    vertical_selection_shift = -0.796875,
+    weight = 1000,
+    max_speed = 1.5,
+    braking_force = 3,
+    friction_force = 0.50,
+    air_resistance = 0.01,
+    connection_distance = 3,
+    joint_distance = 4,
+    energy_per_hit_point = 5,
+    resistances =
+    {
+      {
+        type = "fire",
+        decrease = 15,
+        percent = 50
+      },
+      {
+        type = "physical",
+        decrease = 15,
+        percent = 30
+      },
+      {
+        type = "impact",
+        decrease = 50,
+        percent = 60
+      },
+      {
+        type = "explosion",
+        decrease = 15,
+        percent = 30
+      },
+      {
+        type = "acid",
+        decrease = 3,
+        percent = 20
+      }
+    },
+    back_light = rolling_stock_back_light(),
+    stand_by_light = rolling_stock_stand_by_light(),
+    color = {r = 0.43, g = 0.23, b = 0, a = 1},
+    pictures =
+    {
+      rotated =
+      {
+        layers =
+        {
+          util.sprite_load("__base__/graphics/entity/cargo-wagon/cargo-wagon",
+            {
+              dice = 4,
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              back_equals_front = true,
+              direction_count = 128,
+              scale = 0.25,
+              usage = "train"
+            }
+          ),
+          util.sprite_load("__base__/graphics/entity/cargo-wagon/cargo-wagon-mask",
+            {
+              dice = 4,
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              back_equals_front = true,
+              flags = { "mask" },
+              apply_runtime_tint = true,
+              tint_as_overlay = true,
+              direction_count = 128,
+              scale = 0.25,
+              usage = "train"
+            }
+          ),
+          util.sprite_load("__base__/graphics/entity/cargo-wagon/cargo-wagon-shadow",
+            {
+              dice = 4,
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              back_equals_front = true,
+              draw_as_shadow = true,
+              direction_count = 128,
+              scale = 0.25,
+              usage = "train"
+            }
+          )
+        }
+      }
+    },
+    horizontal_doors =
+    {
+      layers =
+      {
+        util.sprite_load("__base__/graphics/entity/cargo-wagon/cargo-wagon-door-horizontal",
+          {
+            frame_count = 8,
+            scale = 0.25,
+            usage = "train"
+          }
+        ),
+        util.sprite_load("__base__/graphics/entity/cargo-wagon/cargo-wagon-door-horizontal-mask",
+          {
+            apply_runtime_tint = true,
+            tint_as_overlay = true,
+            flags = { "mask" },
+            frame_count = 8,
+            scale = 0.25,
+            usage = "train"
+          }
+        )
+      }
+    },
+    vertical_doors =
+    {
+      layers =
+      {
+        util.sprite_load("__base__/graphics/entity/cargo-wagon/cargo-wagon-door-vertical",
+          {
+            frame_count = 8,
+            scale = 0.25,
+            usage = "train"
+          }
+        ),
+        util.sprite_load("__base__/graphics/entity/cargo-wagon/cargo-wagon-door-vertical-mask",
+          {
+            apply_runtime_tint = true,
+            tint_as_overlay = true,
+            flags = { "mask" },
+            frame_count = 8,
+            scale = 0.25,
+            usage = "train"
+          }
+        )
+      }
+    },
+    minimap_representation =
+    {
+      filename = "__base__/graphics/entity/cargo-wagon/minimap-representation/cargo-wagon-minimap-representation.png",
+      flags = {"icon"},
+      size = {20, 40},
+      scale = 0.25
+    },
+    selected_minimap_representation =
+    {
+      filename = "__base__/graphics/entity/cargo-wagon/minimap-representation/cargo-wagon-selected-minimap-representation.png",
+      flags = {"icon"},
+      size = {20, 40},
+      scale = 0.25
+    },
+    wheels = standard_train_wheels,
+    drive_over_tie_trigger = drive_over_tie(),
+    drive_over_tie_trigger_minimal_speed = 0.5,
+    tie_distance = 50,
+    working_sound = sounds.train_wagon_wheels,
+    crash_trigger = crash_trigger(),
+    open_sound = sounds.cargo_wagon_open,
+    close_sound = sounds.cargo_wagon_close,
+    impact_category = "metal-large",
+    water_reflection = locomotive_reflection(),
+    door_opening_sound =
+    {
+      sound =
+      {
+        filename = "__base__/sound/cargo-wagon/cargo-wagon-opening-loop.ogg",
+        volume = 0.3,
+        aggregation = {max_count = 1, remove = true, count_already_playing = true}
+      },
+      stopped_sound =
+      {
+        filename = "__base__/sound/cargo-wagon/cargo-wagon-opened.ogg",
+        volume = 0.25,
+        aggregation = {max_count = 1, remove = true, count_already_playing = true}
+      }
+    },
+    door_closing_sound =
+    {
+      sound =
+      {
+        filename = "__base__/sound/cargo-wagon/cargo-wagon-closing-loop.ogg",
+        volume = 0.3,
+        aggregation = {max_count = 1, remove = true, count_already_playing = true}
+      },
+      stopped_sound =
+      {
+        filename = "__base__/sound/cargo-wagon/cargo-wagon-closed.ogg",
+        volume = 0.3,
+        aggregation = {max_count = 1, remove = true, count_already_playing = true}
+      }
+    }
+  },
+
+  {
+    type = "fluid-wagon",
+    name = "small-fluid-wagon",
+    icon = "__base__/graphics/icons/fluid-wagon.png",
+    flags = {"placeable-neutral", "player-creation", "placeable-off-grid"},
+    minable = {mining_time = 0.5, result = "small-fluid-wagon"},
+    mined_sound = sounds.deconstruct_large(0.8),
+    max_health = 600,
+    capacity = 50000,
+    deliver_category = "vehicle",
+    corpse = "fluid-wagon-remnants",
+    dying_explosion = "fluid-wagon-explosion",
+    factoriopedia_simulation = simulations.factoriopedia_fluid_wagon,
+    collision_box = {{-0.6, -2.4}, {0.6, 2.4}},
+    selection_box = {{-1, -2.703125}, {1, 3.296875}},
+    damaged_trigger_effect = hit_effects.entity(),
+    vertical_selection_shift = -0.796875,
+    icon_draw_specification = {scale = 1.25, shift = {0, -1}},
+    weight = 1000,
+    max_speed = 1.5,
+    braking_force = 3,
+    friction_force = 0.50,
+    air_resistance = 0.01,
+    connection_distance = 3,
+    joint_distance = 4,
+    energy_per_hit_point = 6,
+    resistances =
+    {
+      {
+        type = "fire",
+        decrease = 15,
+        percent = 50
+      },
+      {
+        type = "physical",
+        decrease = 15,
+        percent = 30
+      },
+      {
+        type = "impact",
+        decrease = 50,
+        percent = 60
+      },
+      {
+        type = "explosion",
+        decrease = 15,
+        percent = 30
+      },
+      {
+        type = "acid",
+        decrease = 3,
+        percent = 20
+      }
+    },
+    back_light = rolling_stock_back_light(),
+    stand_by_light = rolling_stock_stand_by_light(),
+    color = {r = 0.43, g = 0.23, b = 0, a = 0.5},
+    pictures =
+    {
+      rotated =
+      {
+        layers =
+        {
+          util.sprite_load("__base__/graphics/entity/fluid-wagon/fluid-wagon",
+            {
+              dice = 4,
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              back_equals_front = true,
+              direction_count = 128,
+              scale = 0.25,
+              usage = "train"
+            }
+          ),
+          util.sprite_load("__base__/graphics/entity/fluid-wagon/fluid-wagon-shadow",
+            {
+              dice = 4,
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              back_equals_front = true,
+              draw_as_shadow = true,
+              direction_count = 128,
+              scale = 0.25,
+              usage = "train"
+            }
+          )
+        }
+      }
+    },
+    minimap_representation =
+    {
+      filename = "__base__/graphics/entity/fluid-wagon/minimap-representation/fluid-wagon-minimap-representation.png",
+      flags = {"icon"},
+      size = {20, 40},
+      scale = 0.25
+    },
+    selected_minimap_representation =
+    {
+      filename = "__base__/graphics/entity/fluid-wagon/minimap-representation/fluid-wagon-selected-minimap-representation.png",
+      flags = {"icon"},
+      size = {20, 40},
+      scale = 0.25
+    },
+    wheels = standard_train_wheels,
+    drive_over_tie_trigger = drive_over_tie(),
+    drive_over_tie_trigger_minimal_speed = 0.5,
+    tie_distance = 50,
+    working_sound = sounds.train_wagon_wheels,
+    crash_trigger = crash_trigger(),
+    impact_category = "metal-large",
+    water_reflection = locomotive_reflection()
+  },
+  {
+    type = "artillery-wagon",
+    name = "small-artillery-wagon",
+    icon = "__base__/graphics/icons/artillery-wagon.png",
+    flags = {"placeable-neutral", "player-creation", "placeable-off-grid"},
+    inventory_size = 1,
+    ammo_stack_limit = 100,
+    minable = {mining_time = 0.5, result = "small-artillery-wagon"},
+    mined_sound = sounds.deconstruct_large(0.8),
+    max_health = 600,
+    deliver_category = "vehicle",
+    corpse = "artillery-wagon-remnants",
+    dying_explosion = "artillery-wagon-explosion",
+    factoriopedia_simulation = simulations.factoriopedia_artillery_wagon,
+    collision_box = {{-0.6, -2.4}, {0.6, 2.4}},
+    selection_box = {{-1, -2.703125}, {1, 3.296875}},
+    damaged_trigger_effect = hit_effects.entity(),
+    vertical_selection_shift = -0.796875,
+    weight = 4000,
+    max_speed = 1.5,
+    braking_force = 3,
+    friction_force = 0.50,
+    air_resistance = 0.015,
+    connection_distance = 3,
+    joint_distance = 4,
+    energy_per_hit_point = 2,
+    gun = "artillery-wagon-cannon",
+    turret_rotation_speed = 0.001,
+    turn_after_shooting_cooldown = 60,
+    cannon_parking_frame_count = 8,
+    cannon_parking_speed = 0.25,
+    manual_range_modifier = 2.5,
+    icon_draw_specification = {scale = 0.7, shift = {0, -0.5}},
+    resistances =
+    {
+      {
+        type = "fire",
+        decrease = 15,
+        percent = 50
+      },
+      {
+        type = "physical",
+        decrease = 15,
+        percent = 30
+      },
+      {
+        type = "impact",
+        decrease = 50,
+        percent = 50
+      },
+      {
+        type = "explosion",
+        decrease = 15,
+        percent = 30
+      },
+      {
+        type = "acid",
+        decrease = 3,
+        percent = 20
+      }
+    },
+    back_light = rolling_stock_back_light(),
+    stand_by_light = rolling_stock_stand_by_light(),
+    color = {r = 0.43, g = 0.23, b = 0, a = 0.5},
+    pictures =
+    {
+      rotated =
+      {
+        layers =
+        {
+          util.sprite_load("__base__/graphics/entity/artillery-wagon/artillery-wagon-base",
+            {
+              dice = 4,
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              direction_count = 256,
+              scale = 0.25,
+              usage = "train"
+            }
+          ),
+          util.sprite_load("__base__/graphics/entity/artillery-wagon/artillery-wagon-base-shadow",
+            {
+              dice = 4,
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              draw_as_shadow = true,
+              direction_count = 256,
+              scale = 0.25,
+              usage = "train"
+            }
+          )
+        }
+      }
+    },
+    cannon_barrel_pictures =
+    {
+      rotated =
+      {
+        layers =
+        {
+          util.sprite_load("__base__/graphics/entity/artillery-wagon/artillery-wagon-cannon-barrel",
+            {
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              direction_count = 256,
+              scale = 0.25,
+              usage = "train"
+            }
+          ),
+          util.sprite_load("__base__/graphics/entity/artillery-wagon/artillery-wagon-cannon-barrel-shadow",
+            {
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              draw_as_shadow = true,
+              direction_count = 256,
+              scale = 0.25,
+              usage = "train"
+            }
+          )
+        }
+      }
+    },
+    cannon_base_pictures =
+    {
+      rotated =
+      {
+        layers =
+        {
+          util.sprite_load("__base__/graphics/entity/artillery-wagon/artillery-wagon-cannon-base",
+            {
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              direction_count = 256,
+              scale = 0.25,
+              usage = "train"
+            }
+          ),
+          util.sprite_load("__base__/graphics/entity/artillery-wagon/artillery-wagon-cannon-base-shadow",
+            {
+              priority = "very-low",
+              allow_low_quality_rotation = true,
+              draw_as_shadow = true,
+              direction_count = 256,
+              scale = 0.25,
+              usage = "train"
+            }
+          )
+        }
+      }
+    },
+    cannon_base_height = 1.672049,
+    cannon_base_shift_when_vertical = -2.5357685,
+    cannon_base_shift_when_horizontal = -2.0702245,
+
+    cannon_barrel_recoil_shiftings =
+    { -- East-North-Up (when cannon is facing North)
+      {  0.0100, -0.0000, -0.0000 },
+      {  0.0093, -0.1973, -0.0878 },
+      {  0.0088, -0.3945, -0.1755 },
+      {  0.0083, -0.5918, -0.2635 },
+      {  0.0078, -0.7888, -0.3513 },
+      {  0.0070, -0.9860, -0.4390 },
+      {  0.0070, -0.9828, -0.4375 },
+      {  0.0070, -0.9753, -0.4343 },
+      {  0.0073, -0.9635, -0.4290 },
+      {  0.0073, -0.9475, -0.4220 },
+      {  0.0073, -0.9278, -0.4130 },
+      {  0.0073, -0.9043, -0.4025 },
+      {  0.0075, -0.8770, -0.3905 },
+      {  0.0075, -0.8463, -0.3768 },
+      {  0.0075, -0.8123, -0.3618 },
+      {  0.0078, -0.7755, -0.3453 },
+      {  0.0078, -0.7360, -0.3278 },
+      {  0.0080, -0.6940, -0.3090 },
+      {  0.0080, -0.6498, -0.2893 },
+      {  0.0083, -0.6040, -0.2690 },
+      {  0.0083, -0.5565, -0.2478 },
+      {  0.0085, -0.5080, -0.2263 },
+      {  0.0085, -0.4588, -0.2043 },
+      {  0.0088, -0.4088, -0.1820 },
+      {  0.0088, -0.3590, -0.1598 },
+      {  0.0090, -0.3095, -0.1378 },
+      {  0.0093, -0.2605, -0.1160 },
+      {  0.0093, -0.2128, -0.0948 },
+      {  0.0095, -0.1663, -0.0740 },
+      {  0.0095, -0.1213, -0.0540 },
+      {  0.0098, -0.0785, -0.0350 },
+      {  0.0098, -0.0380, -0.0170 },
+    },
+    cannon_barrel_light_direction = {0.5976251, -0.0242053, -0.8014102}, -- ENU
+
+    minimap_representation =
+    {
+      filename = "__base__/graphics/entity/artillery-wagon/minimap-representation/artillery-wagon-minimap-representation.png",
+      flags = {"icon"},
+      size = {20, 40},
+      scale = 0.25
+    },
+    selected_minimap_representation =
+    {
+      filename = "__base__/graphics/entity/artillery-wagon/minimap-representation/artillery-wagon-selected-minimap-representation.png",
+      flags = {"icon"},
+      size = {20, 40},
+      scale = 0.25
+    },
+    wheels = standard_train_wheels,
+    drive_over_tie_trigger = drive_over_tie(),
+    drive_over_tie_trigger_minimal_speed = 0.5,
+    tie_distance = 50,
+    working_sound = sounds.train_wagon_wheels,
+    crash_trigger = crash_trigger(),
+    open_sound = sounds.artillery_open,
+    close_sound = sounds.artillery_close,
+    rotating_sound =
+    {
+      sound = {filename = "__base__/sound/fight/artillery-rotation-loop.ogg", volume = 0.2},
+      stopped_sound = {filename = "__base__/sound/fight/artillery-rotation-stop.ogg"}
+    },
+    water_reflection =
+    {
+      pictures =
+      {
+        filename = "__base__/graphics/entity/artillery-wagon/reflection/artillery-wagon-reflection.png",
+        priority = "extra-high",
+        width = 32,
+        height = 52,
+        shift = util.by_pixel(0, 40),
+        variation_count = 1,
+        scale = 2.5
+      },
+      rotate = true,
+      orientation_to_variation = false
+    }
+  },
+  {
+    type = "train-stop",
+    name = "small-train-stop",
+    icon = "__base__/graphics/icons/train-stop.png",
+    flags = {"placeable-neutral", "player-creation", "filter-directions"},
+    fast_replaceable_group = "small-train-stop",
+    minable = {mining_time = 0.2, result = "small-train-stop"},
+    max_health = 250,
+    corpse = "train-stop-remnants",
+    dying_explosion = "train-stop-explosion",
+    factoriopedia_simulation = simulations.factoriopedia_train_stop,
+    collision_box = {{-0.5, -0.5}, {0.5, 0.5}},
+    selection_box = {{-0.9, -0.9}, {0.9, 0.9}},
+    damaged_trigger_effect = hit_effects.entity(),
+    drawing_boxes =
+    {
+      north = {{-3,-2.5}, {0.8, 1.25}},
+      east = {{-1.75, -4.25},{1.625, 0.5}},
+      south = {{-0.8125, -3.625},{2.75, 0.4375}},
+      west = {{-1.75, -1.6875},{2.0625, 2.75}}
+    },
+    tile_width = 2,
+    tile_height = 2,
+    animation_ticks_per_frame = 20,
+    rail_overlay_animations = make_4way_animation_from_spritesheet(
+    {
+      filename = "__base__/graphics/entity/train-stop/train-stop-ground.png",
+      width = 386,
+      height = 377,
+      direction_count = 4,
+      shift = util.by_pixel(0, -0.75),
+      scale = 0.25
+    }),
+
+    animations = make_4way_animation_from_spritesheet({ layers =
+    {
+      {
+        filename = "__base__/graphics/entity/train-stop/train-stop-bottom.png",
+        width = 140,
+        height = 291,
+        direction_count = 4,
+        shift = util.by_pixel(-0.5, -26.75),
+        scale = 0.25
+      },
+      {
+        filename = "__base__/graphics/entity/train-stop/train-stop-shadow.png",
+        width = 526,
+        height = 370,
+        shift = util.by_pixel( 41.5, 11.0),
+        direction_count = 4,
+        draw_as_shadow = true,
+        scale = 0.25
+      }
+    }}),
+
+    top_animations = make_4way_animation_from_spritesheet({ layers =
+    {
+      {
+        filename = "__base__/graphics/entity/train-stop/train-stop-top.png",
+        width = 312,
+        height = 306,
+        direction_count = 4,
+        shift = util.by_pixel( 0.5, -50.5),
+        scale = 0.25
+      },
+      {
+        filename = "__base__/graphics/entity/train-stop/train-stop-top-mask.png",
+        width = 306,
+        height = 294,
+        direction_count = 4,
+        apply_runtime_tint = true,
+        tint_as_overlay = true,
+        shift = util.by_pixel( 0.5, -48.5),
+        scale = 0.25
+      }
+    }}),
+
+    light1 =
+    {
+      light = {intensity = 0.2, size = 2},
+      picture =
+      {
+        north =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-north-light-1.png",
+          draw_as_glow = true,
+          width = 17,
+          height = 9,
+          shift = util.by_pixel(-70.75, -44.25),
+          scale = 0.25
+        },
+        west =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-east-light-1.png",
+          draw_as_glow = true,
+          width = 6,
+          height = 16,
+          shift = util.by_pixel(34.5, 19.5),
+          scale = 0.25
+        },
+        south =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-south-light-1.png",
+          draw_as_glow = true,
+          width = 16,
+          height = 4,
+          shift = util.by_pixel(70, -95),
+          scale = 0.25
+        },
+        east =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-west-light-1.png",
+          draw_as_glow = true,
+          width = 6,
+          height = 16,
+          shift = util.by_pixel(-30.5, -112),
+          scale = 0.25
+        }
+      },
+      red_picture =
+      {
+        north =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-north-red-light-1.png",
+          draw_as_glow = true,
+          width = 17,
+          height = 9,
+          shift = util.by_pixel(-70.75, -44.25),
+          scale = 0.25
+        },
+        west =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-east-red-light-1.png",
+          draw_as_glow = true,
+          width = 6,
+          height = 16,
+          shift = util.by_pixel(34.5, 19.5),
+          scale = 0.5
+        },
+        south =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-south-red-light-1.png",
+          draw_as_glow = true,
+          width = 16,
+          height = 4,
+          shift = util.by_pixel(70, -95),
+          scale = 0.25
+        },
+        east =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-west-red-light-1.png",
+          draw_as_glow = true,
+          width = 6,
+          height = 16,
+          shift = util.by_pixel(-30.5, -112),
+          scale = 0.25
+        }
+      }
+    },
+
+    light2 =
+    {
+      light = {intensity = 0.2, size = 2},
+      picture =
+      {
+        north =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-north-light-2.png",
+          draw_as_glow = true,
+          width = 16,
+          height = 9,
+          shift = util.by_pixel(-57.5, -43.75),
+          scale = 0.25
+        },
+        west =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-east-light-2.png",
+          draw_as_glow = true,
+          width = 6,
+          height = 16,
+          shift = util.by_pixel(34.5, 10),
+          scale = 0.25
+        },
+        south =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-south-light-2.png",
+          draw_as_glow = true,
+          width = 16,
+          height = 5,
+          shift = util.by_pixel(57, -94.75),
+          scale = 0.25
+        },
+        east =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-west-light-2.png",
+          draw_as_glow = true,
+          width = 7,
+          height = 15,
+          shift = util.by_pixel(-30.75, -102.75),
+          scale = 0.25
+        }
+      },
+      red_picture =
+      {
+        north =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-north-red-light-2.png",
+          draw_as_glow = true,
+          width = 16,
+          height = 9,
+          shift = util.by_pixel(-57.5, -43.75),
+          scale = 0.25
+        },
+        west =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-east-red-light-2.png",
+          draw_as_glow = true,
+          width = 6,
+          height = 16,
+          shift = util.by_pixel(34.5, 10),
+          scale = 0.25
+        },
+        south =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-south-red-light-2.png",
+          draw_as_glow = true,
+          width = 16,
+          height = 5,
+          shift = util.by_pixel(57, -94.75),
+          scale = 0.25
+        },
+        east =
+        {
+          filename = "__base__/graphics/entity/train-stop/train-stop-west-red-light-2.png",
+          draw_as_glow = true,
+          width = 7,
+          height = 15,
+          shift = util.by_pixel(-30.75, -102.75),
+          scale = 0.25
+        }
+      }
+    },
+    impact_category = "metal",
+    color={0.95, 0, 0, 1},
+    open_sound = {filename = "__base__/sound/open-close/train-stop-open.ogg", volume = 0.6},
+    close_sound = {filename = "__base__/sound/open-close/train-stop-close.ogg", volume = 0.5},
+    working_sound =
+    {
+      sound = { filename = "__base__/sound/train-stop.ogg", volume = 0.7 },
+      audible_distance_modifier = 0.2
+    },
+
+    circuit_connector = circuit_connector_definitions["train-station"],
+    circuit_wire_max_distance = default_circuit_wire_max_distance,
+
+    default_train_stopped_signal = {type = "virtual", name = "signal-T"},
+    default_trains_count_signal = {type = "virtual", name = "signal-C"},
+    default_trains_limit_signal = {type = "virtual", name = "signal-L"},
+    default_priority_signal = {type = "virtual", name = "signal-P"}
+  },
+  {
+    type = "rail-signal",
+    name = "small-rail-signal",
+    icon = "__base__/graphics/icons/rail-signal.png",
+    flags = {"placeable-neutral", "player-creation", "building-direction-16-way", "filter-directions"},
+    fast_replaceable_group = "small-rail-signal",
+    minable = {mining_time = 0.1, result = "small-rail-signal"},
+    max_health = 100,
+    corpse = "rail-signal-remnants",
+    dying_explosion = "rail-signal-explosion",
+    factoriopedia_simulation = simulations.factoriopedia_rail_signal,
+    collision_box = {{-0.2, -0.2}, {0.2, 0.2}},
+    selection_box = {{-0.45, -0.65}, {0.45, 0.65}},
+    damaged_trigger_effect = hit_effects.entity(),
+    open_sound = sounds.rail_signal_open,
+    close_sound = sounds.rail_signal_close,
+    ground_picture_set = require("__base__.graphics.entity.rail-signal.rail-signal-ground"),
+    elevated_picture_set = require("__base__.graphics.entity.rail-signal.rail-signal-ground"),
+    circuit_wire_max_distance = default_circuit_wire_max_distance,
+
+    default_red_output_signal = {type = "virtual", name = "signal-red"},
+    default_orange_output_signal = {type = "virtual", name = "signal-yellow"},
+    default_green_output_signal = {type = "virtual", name = "signal-green"}
+  },
+  {
+    type = "rail-chain-signal",
+    name = "small-rail-chain-signal",
+    icon = "__base__/graphics/icons/rail-chain-signal.png",
+    flags = {"placeable-neutral", "player-creation", "building-direction-16-way", "filter-directions"},
+    fast_replaceable_group = "small-rail-signal",
+    minable = {mining_time = 0.1, result = "small-rail-chain-signal"},
+    max_health = 100,
+    corpse = "rail-chain-signal-remnants",
+    dying_explosion = "rail-chain-signal-explosion",
+    factoriopedia_simulation = simulations.factoriopedia_rail_chain_signal,
+    collision_box = {{-0.2, -0.2}, {0.2, 0.2}},
+    selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
+    damaged_trigger_effect = hit_effects.entity(),
+    open_sound = sounds.rail_signal_open,
+    close_sound = sounds.rail_signal_close,
+    ground_picture_set = require("__base__.graphics.entity.rail-chain-signal.rail-chain-signal-ground"),
+    elevated_picture_set = require("__base__.graphics.entity.rail-chain-signal.rail-chain-signal-ground"),
+    circuit_wire_max_distance = default_circuit_wire_max_distance,
+
+    default_red_output_signal = {type = "virtual", name = "signal-red"},
+    default_orange_output_signal = {type = "virtual", name = "signal-yellow"},
+    default_green_output_signal = {type = "virtual", name = "signal-green"},
+    default_blue_output_signal = {type = "virtual", name = "signal-blue"}
+  }
+}
+)
