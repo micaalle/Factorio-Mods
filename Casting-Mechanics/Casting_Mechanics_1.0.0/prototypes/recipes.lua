@@ -17,9 +17,8 @@ data:extend({
       {
           {type = "item", name = "stone", probability = 0.25, amount = 10},
           {type = "item", name = "crushed-core", probability = 0.6, amount = 10},
-          {type = "fluid", name = "lava", probability = 0.05, amount = 500},
-          {type = "item", name = "copper-ore", probability = 0.05, amount = 10},
-          {type = "item", name = "iron-ore", probability = 0.05, amount = 10},
+          {type = "item", name = "crushed-core", probability = 0.6, amount = 10},
+          {type = "item", name = "crushed-core", probability = 0.6, amount = 10},
           {type = "item", name = "sulfur", probability = 0.05, amount = 10},
       },
       allow_productivity = true,
@@ -85,7 +84,7 @@ data:extend({
   enabled = true,
   ingredients =
   {
-      {type = "item", name = "salt", amount = 10},
+      {type = "item", name = "cm-salt", amount = 10},
   },
   energy_required = 32,
   results =
@@ -99,11 +98,11 @@ data:extend({
 },
 })
 
--- early-molten-iron recipe
+-- molten recipes
 data:extend({
   {
       type = "recipe",
-      name = "early-molten-iron",
+      name = "cm-molten-iron",
       category = "early-metallurgy",
       subgroup = "vulcanus-processes",
       order = "a[melting]-b[molten-iron]",
@@ -111,138 +110,151 @@ data:extend({
       enabled = false,
       ingredients =
       {
-          {type = "fluid", name = "lava", amount = 500},
+          {type = "item", name = "crushed-core", amount = 1},
       },
       energy_required = 32,
       results =
       {
           {type = "fluid", name = "molten-iron", amount = 250},
           {type = "item", name = "stone", amount = 10},
-          {type = "item", name = "slag", amount = 10},
-          {type = "item", name = "crushed-core", amount = 10},
-          {type = "item", name = "filter-clean", amount = 10},
-          {type = "item", name = "filter-dirty", amount = 10},
-          {type = "item", name = "scrubbed-pollutants", amount = 10},
-          {type = "item", name = "processed-wood", amount = 10},
-          {type = "item", name = "wood-pulp", amount = 10},
       },
       allow_productivity = true,
       hide_from_signal_gui = false,
       main_product = "molten-iron",
-  }
-})
-
--- early-molten-copper recipe
-data:extend({
+  },
   {
-      type = "recipe",
-      name = "early-molten-copper",
-      category = "early-metallurgy",
-      subgroup = "vulcanus-processes",
-      order = "a[melting]-c[molten-copper]",
-      auto_recycle = false,
-      enabled = false,
-      ingredients =
-      {
-          {type = "fluid", name = "lava", amount = 500},
-      },
-      energy_required = 32,
-      results =
-      {
-          {type = "fluid", name = "molten-copper", amount = 250},
-          {type = "item", name = "stone", amount = 10},
-      },
-      hide_from_signal_gui = false,
-      allow_productivity = true,
-      main_product = "molten-copper",
-  }
+    type = "recipe",
+    name = "cm-molten-copper",
+    category = "early-metallurgy",
+    subgroup = "vulcanus-processes",
+    order = "a[melting]-b[molten-iron]",
+    auto_recycle = false,
+    enabled = false,
+    ingredients =
+    {
+        {type = "item", name = "crushed-core", amount = 1},
+    },
+    energy_required = 32,
+    results =
+    {
+        {type = "fluid", name = "molten-copper", amount = 250},
+        {type = "item", name = "stone", amount = 10},
+    },
+    allow_productivity = true,
+    hide_from_signal_gui = false,
+    main_product = "molten-copper",
+},
+{
+    type = "recipe",
+    name = "cm-molten-silicon",
+    category = "early-metallurgy",
+    subgroup = "vulcanus-processes",
+    order = "a[melting]-b[molten-iron]",
+    auto_recycle = false,
+    enabled = false,
+    ingredients =
+    {
+        {type = "item", name = "crushed-core", amount = 1},
+    },
+    energy_required = 32,
+    results =
+    {
+        {type = "fluid", name = "molten-silicon", amount = 250},
+        {type = "item", name = "stone", amount = 10},
+    },
+    allow_productivity = true,
+    hide_from_signal_gui = false,
+    main_product = "molten-silicon",
+}
+
 })
 
--- early-casting-iron recipe
+-- Base metals casting recipes
 data:extend({
-  {
-      type = "recipe",
-      name = "early-casting-iron",
-      category = "early-metallurgy",
-      subgroup = "vulcanus-processes",
-      order = "b[casting]-a[casting-iron]",
-      icon = "__space-age__/graphics/icons/casting-iron.png",
-      enabled = false,
-      ingredients =
-      {
-          {type = "fluid", name = "molten-iron", amount = 20, fluidbox_multiplier = 10},
-      },
-      energy_required = 3.2,
-      allow_decomposition = false,
-      results = {{type = "item", name = "iron-plate", amount = 2}},
-      allow_productivity = true,
-  }
+    {
+        type = "recipe",
+        name = "cm-casting-iron",
+        category = "early-metallurgy",
+        subgroup = "vulcanus-processes",
+        order = "b[casting]-a[casting-iron]",
+        icon = "__space-age__/graphics/icons/casting-iron.png",
+        enabled = false,
+        ingredients =
+        {
+            {type = "fluid", name = "molten-iron", amount = 20, fluidbox_multiplier = 10},
+        },
+        energy_required = 3.2,
+        allow_decomposition = false,
+        results = {
+            {type = "item", name = "iron-plate", amount = 2},
+            {type = "item", name = "slag", amount = 1},
+        },
+        allow_productivity = true,
+    },
+    {
+        type = "recipe",
+        name = "cm-casting-copper",
+        category = "early-metallurgy",
+        subgroup = "vulcanus-processes",
+        order = "b[casting]-b[casting-copper]",
+        icon = "__space-age__/graphics/icons/casting-copper.png",
+        enabled = false,
+        ingredients =
+        {
+            {type = "fluid", name = "molten-copper", amount = 20, fluidbox_multiplier = 10},
+        },
+        energy_required = 3.2,
+        allow_decomposition = false,
+        results = {
+            {type = "item", name = "copper-plate", amount = 2},
+            {type = "item", name = "slag", amount = 1},
+        },
+        allow_productivity = true,
+    },
+    {
+        type = "recipe",
+        name = "cm-casting-silicon",
+        category = "early-metallurgy",
+        subgroup = "vulcanus-processes",
+        order = "b[casting]-b[casting-silicon]",
+        icon = "__micaalle_Graphics__/graphics/items/casting-silicon.png",
+        enabled = false,
+        ingredients =
+        {
+            {type = "fluid", name = "molten-silicon", amount = 20, fluidbox_multiplier = 10},
+        },
+        energy_required = 3.2,
+        allow_decomposition = false,
+        results = {
+            {type = "item", name = "cm-silicon-plate", amount = 2},
+            {type = "item", name = "slag", amount = 1},
+        },
+        allow_productivity = true,
+    },
+    {
+        type = "recipe",
+        name = "cm-casting-steel",
+        category = "early-metallurgy",
+        subgroup = "vulcanus-processes",
+        order = "b[casting]-c[casting-steel]",
+        icon = "__space-age__/graphics/icons/casting-steel.png",
+        enabled = false,
+        ingredients =
+        {
+            {type = "fluid", name = "molten-iron", amount = 30, fluidbox_multiplier = 10},
+        },
+        energy_required = 3.2,
+        allow_decomposition = false,
+        results = {
+            {type = "item", name = "steel-plate", amount = 1},
+            {type = "item", name = "slag", amount = 1},
+        },
+        allow_productivity = true,
+    }
 })
 
--- early-casting-steel recipe
-data:extend({
-  {
-      type = "recipe",
-      name = "early-casting-steel",
-      category = "early-metallurgy",
-      subgroup = "vulcanus-processes",
-      order = "b[casting]-c[casting-steel]",
-      icon = "__space-age__/graphics/icons/casting-steel.png",
-      enabled = false,
-      ingredients =
-      {
-          {type = "fluid", name = "molten-iron", amount = 30, fluidbox_multiplier = 10},
-      },
-      energy_required = 3.2,
-      allow_decomposition = false,
-      results = {{type = "item", name = "steel-plate", amount = 1}},
-      allow_productivity = true,
-  }
-})
 
--- early-casting-copper recipe
-data:extend({
-  {
-      type = "recipe",
-      name = "early-casting-copper",
-      category = "early-metallurgy",
-      subgroup = "vulcanus-processes",
-      order = "b[casting]-b[casting-copper]",
-      icon = "__space-age__/graphics/icons/casting-copper.png",
-      enabled = false,
-      ingredients =
-      {
-          {type = "fluid", name = "molten-copper", amount = 20, fluidbox_multiplier = 10},
-      },
-      energy_required = 3.2,
-      allow_decomposition = false,
-      results = {{type = "item", name = "copper-plate", amount = 2}},
-      allow_productivity = true,
-  }
-})
-
--- early-casting-iron-gear-wheel recipe
-data:extend({
-  {
-      type = "recipe",
-      name = "early-casting-iron-gear-wheel",
-      category = "early-metallurgy",
-      subgroup = "vulcanus-processes",
-      order = "b[casting]-d[casting-iron-gear-wheel]",
-      icon = "__space-age__/graphics/icons/casting-iron-gear-wheel.png",
-      enabled = false,
-      ingredients =
-      {
-          {type = "fluid", name = "molten-iron", amount = 10, fluidbox_multiplier = 10},
-      },
-      energy_required = 1,
-      allow_decomposition = false,
-      results = {{type = "item", name = "iron-gear-wheel", amount = 1}},
-      allow_productivity = true,
-  }
-})
-
--- early-casting-iron-stick recipe
+-- Intermidiate casting recipes
 data:extend({
   {
       type = "recipe",
