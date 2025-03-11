@@ -20,6 +20,40 @@ data:extend({
       weight = 2 * kg
     },
     {
+      type = "item",
+      name = "cm-silicon",
+      icon = "__micaalle_Graphics__/graphics/items/silicon.PNG",
+      pictures = {
+        { size = 64, filename = "__micaalle_Graphics__/graphics/items/silicon.PNG", scale = 0.5, mipmap_count = 4 },
+        { size = 64, filename = "__micaalle_Graphics__/graphics/items/silicon-1.png", scale = 0.5, mipmap_count = 4 },
+        { size = 64, filename = "__micaalle_Graphics__/graphics/items/silicon-2.png", scale = 0.5, mipmap_count = 4 },
+        { size = 64, filename = "__micaalle_Graphics__/graphics/items/silicon-3.png", scale = 0.5, mipmap_count = 4 }
+      },
+      subgroup = "raw-resource",
+      order = "d[cm-silicon]",
+      inventory_move_sound = item_sounds.resource_inventory_move,
+      pick_sound = item_sounds.resource_inventory_pickup,
+      drop_sound = item_sounds.resource_inventory_move,
+      stack_size = 50,
+      weight = 2 * kg
+    },
+    {
+      type = "item",
+      name = "cm-silicon-plate",
+      icon = "__micaalle_Graphics__/graphics/items/silicon-plate.png",
+      pictures = {
+        { size = 64, filename = "__micaalle_Graphics__/graphics/items/silicon-plate.png", scale = 0.5, mipmap_count = 4 },
+
+      },
+      subgroup = "intermediate-product",
+      order = "d[cm-silicon-plate]",
+      inventory_move_sound = item_sounds.resource_inventory_move,
+      pick_sound = item_sounds.resource_inventory_pickup,
+      drop_sound = item_sounds.resource_inventory_move,
+      stack_size = 50,
+      weight = 2 * kg
+    },
+    {
         type = "item",
         name = "crushed-core",
         icon = "__micaalle_Graphics__/graphics/items/crushed-core.png",
@@ -159,20 +193,6 @@ data:extend({
   stack_size = 50,
   weight = 3 * kg
 },
-{
-  type = "fluid",      --PLACEHOLDER IMAGE
-  name = "cm-chlorine-gas",
-  icon = "__micaalle_Graphics__/graphics/items/chlorine-gas.PNG",
-  pictures = {
-    { size = 64, filename = "__micaalle_Graphics__/graphics/items/chlorine-gas.PNG", scale = 0.5, mipmap_count = 4 },
-  },
-  subgroup = "intermediate-product",
-  order = "d[cm-chlorine-gas]",
-  inventory_move_sound = item_sounds.resource_inventory_move,
-  pick_sound = item_sounds.resource_inventory_pickup,
-  drop_sound = item_sounds.resource_inventory_move,
-  stack_size = 50,
-  weight = 3 * kg
-}
   })
+
 
