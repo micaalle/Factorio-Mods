@@ -1,0 +1,10 @@
+{
+    "name": "elements",
+    "version": "1.0.0",
+    "title": "Elemental",
+    "author": "micaalle",
+    "factorio_version": "2.0",
+    "description": "PLACEHOLDER",
+    "dependencies": ["base >= 2.0.0", "space-age >= 2.0.0"]
+  }
+  
