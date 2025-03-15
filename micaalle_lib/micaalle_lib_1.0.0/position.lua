@@ -1,5 +1,6 @@
 Position = {}
 --STILL GO THROUGH AND ADD ERROR STATEMENTS
+
 require 'stdlib/core'
 
 -- create table for storing coordinates
