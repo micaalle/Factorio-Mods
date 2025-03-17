@@ -1,11 +1,20 @@
 Position = {}
 --STILL GO THROUGH AND ADD ERROR STATEMENTS
-
 require 'stdlib/core'
 
 -- create table for storing coordinates
 function Position.construct(x, y)
     return { x = x, y = y }
+end
+
+-- convert the cordinates to the table i.e 2D array storing them
+function Position.to_table(pos_arr)
+    fail_if_missing(pos_arr, "missing position argument")
+
+    if #pos_arr == 2 then
+        return { x = pos_arr[1], y = pos_arr[2] }
+    end
+    return pos_arr
 end
 
 -- copy coordinates and return position
@@ -207,3 +216,36 @@ function Position.rotate(pos, angle)
 
     return { x = pos.x * cos_angle - pos.y * sin_angle, y = pos.x * sin_angle + pos.y * cos_angle }
 end
+
+return Position
+
+
+Area = {}
+
+function Area.define(x1,y1,x2,y2)
+    return { top_left = position.construct(x1, y1), bottom right = position.construct(x2,y2)}
+end
+
+function Area.size(area)
+    if not area.is_valid(pos) then
+        error("Invalid position")
+    end
+
+    area = Area.to_table(area)
+
+    local top_left = Position.to_table(area.top_left)
+    local bottom_right = Position.to_table(area.bottom_right)
+    return (math.abs(top_left.x - bottom_right.x) * math.abs(top_left.y - bottom_right.y))
+end
+
+function Area.
+
+function Area.to_table(area_arr)
+    if #area_arr == 2 then
+        return { top_left = Position.to_table(area_arr[1]), bottom_right = Position.to_table(area_arr[2]) }
+    end
+    return area_arr
+end
+
+return area
+
