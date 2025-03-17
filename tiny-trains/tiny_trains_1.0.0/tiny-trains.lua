@@ -1,3 +1,5 @@
+-- I have realized that any implementation in which makes the rails smaller is just not possible due to them being hard-coded into the game and thus the production for this mod is over
+
 require ("tiny-rail-pictures")
 
 local hit_effects = require("__base__/prototypes/entity/hit-effects")
