@@ -1,0 +1,10 @@
+{
+    "name": "Rod_Of_Discord",
+    "version": "1.0.0",
+    "title": "Rod of Discord",
+    "author": "micaalle",
+    "factorio_version": "2.0",
+    "description": "Terraria rod of discord in factorio",
+    "dependencies": ["base >= 2.0.0"]
+  }
+  
