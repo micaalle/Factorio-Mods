@@ -1,0 +1,8 @@
+1.0.3: Fixed an issue where players unfortunate enough to be killed by their own hubris (and maybe the unbelievably big RC car explosion) would display the "player was killed by Unknown Key:" rather then the name of the RC car. I also fixed the icon size of the car so the little box on the left which displays the RC car would show the whole icon rather then a zoomed in spot on the turret 
+
+1.0.2: Fixed some bad code that resulted in the explosion damage being contained within a `control.lua` file rather than being determined within the `data.lua` file. This should make the mod more compatible with other mods, as this issue was causing problems with mods such as AAI Industries. The damage scaling still works and if anything should be more efficient if not maybe slightly incredibly broken 
+
+1.0.1: Implemented damage scaling based on "Stronger Explosive" level with a 0.4 modifier each time it is upgraded. Also got rid of the ghost after explosion. Still need to add icons onto the research for stronger explosives to represent the new change however everything else should work as intended
+
+
+1.0.0 Base mod published
