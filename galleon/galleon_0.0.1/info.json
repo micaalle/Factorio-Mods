@@ -1,0 +1,12 @@
+{
+  "name": "pirateship",
+  "version": "0.0.1",
+  
+  "title": "Pirate Ship",
+  "description": "TEST",
+  
+  "author": "micaalle",
+
+  "dependencies": ["base >= 2.0.20"],
+  "factorio_version": "2.0"
+}
