@@ -1,0 +1,10 @@
+{
+    "name": "SprintMod",
+    "version": "1.0.2",
+    "title": "Sprint Mod",
+    "author": "micaalle",
+    "factorio_version": "2.1",
+    "description": "Mod that allows the player to toggle sprinting ",
+    "dependencies": ["base >= 2.1.0"]
+  }
+  
