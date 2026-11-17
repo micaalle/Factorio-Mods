@@ -342,7 +342,7 @@ local pirate_ship_technology = {
 local pirate_ship_input = {
   type = "custom-input",
   name = "enter-pirate-ship",
-  key_sequence = "SHIFT + ENTER",
+  key_sequence = "SHIFT + KP_ENTER",
   consuming = "game-only"
 }
 
